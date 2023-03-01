@@ -7,14 +7,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define SPI1_Enable
-//#define SPI2_Enable
-//#define SPI3_Enable
-#define WipeBufferEachRead
 #define ReadBufferSize	100
 #define WriteBufferSize	100
 #define	DontCareByte	(uint8_t)0
-
 #define	CS0_High	SET_BIT(GPIOA->ODR, GPIO_ODR_ODR4)
 #define	CS0_Low	CLEAR_BIT(GPIOA->ODR, GPIO_ODR_ODR4)
 
@@ -46,8 +41,31 @@ typedef struct
 	SPI_StateTypeDef state;
 }SPI_InstanceTypeDef;
 
+/**
+*	@brief Initialize the SPI according to the specified parameters
+* @param SPIx: SPI1, SPI2 or SPI3
+* @param SPI_Mode: SPI_Mode_Master or SPI_Mode_Slave
+* @param SPI_BaudRatePrescaler: SPI_BaudRatePrescaler_2...4,8,16,32,64,128,256
+* @retval none
+*/
 void SPIx_Init(SPI_TypeDef *SPIx, uint16_t SPI_Mode, uint16_t SPI_BaudRatePrescaler);
+
+/**
+*	@brief Transmit an amount of data in blocking mode
+* @param SPIx: SPI1, SPI2 or SPI3
+* @param pBuffer: pointer to data source buffer
+* @param lengthTX: No. of bytes to transmit
+* @retval operation status (SUCCESS or ERROR)
+*/
 ErrorStatus SPI_Transmit(SPI_TypeDef *SPIx, const uint8_t *pBuffer, uint32_t lengthTX);
+
+/**
+*	@brief Receive an amount of data in blocking mode
+* @param SPIx: SPI1, SPI2 or SPI3
+* @param pBuffer: pointer to data destination buffer
+* @param lengthTX: No. of bytes to receive
+* @retval operation status (SUCCESS or ERROR)
+*/
 ErrorStatus SPI_Receive(SPI_TypeDef *SPIx, uint8_t *pBuffer, uint32_t lengthRX);
 
 #endif

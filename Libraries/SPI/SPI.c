@@ -82,6 +82,36 @@ ErrorStatus SPI_Transmit(SPI_TypeDef *SPIx, const uint8_t *pBuffer, uint32_t len
 		SPI1_Instance.state = SPI_STATE_READY;
 		return SUCCESS;
 	}
+	else if (SPIx == SPI2)
+	{
+		while (SPI2_Instance.state != SPI_STATE_READY);
+		SPI2_Instance.state = SPI_STATE_BUSY_TX;
+		SPI2_Instance.countTX = 0;
+		SPI2_Instance.sizeTX = lengthTX;
+		while (SPI2_Instance.countTX < lengthTX)
+		{
+			while (!READ_BIT(SPI2->SR, SPI_SR_TXE));
+			SPI2->DR = pBuffer[SPI2_Instance.countTX++];
+		}
+		while (READ_BIT(SPI2->SR, SPI_SR_BSY));
+		SPI2_Instance.state = SPI_STATE_READY;
+		return SUCCESS;
+	}
+	else if (SPIx == SPI3)
+	{
+		while (SPI3_Instance.state != SPI_STATE_READY);
+		SPI3_Instance.state = SPI_STATE_BUSY_TX;
+		SPI3_Instance.countTX = 0;
+		SPI3_Instance.sizeTX = lengthTX;
+		while (SPI3_Instance.countTX < lengthTX)
+		{
+			while (!READ_BIT(SPI3->SR, SPI_SR_TXE));
+			SPI3->DR = pBuffer[SPI3_Instance.countTX++];
+		}
+		while (READ_BIT(SPI3->SR, SPI_SR_BSY));
+		SPI3_Instance.state = SPI_STATE_READY;
+		return SUCCESS;
+	}
 	return ERROR; // no match SPIx
 }
 
@@ -101,6 +131,38 @@ ErrorStatus SPI_Receive(SPI_TypeDef *SPIx, uint8_t *pBuffer, uint32_t lengthRX)
 			pBuffer[SPI1_Instance.countRX++] = SPI1->DR;
 		}
 		SPI1_Instance.state = SPI_STATE_READY;
+		return SUCCESS;
+	}
+	else if (SPIx == SPI2)
+	{
+		while (SPI2_Instance.state != SPI_STATE_READY);
+		SPI2_Instance.state = SPI_STATE_BUSY_RX;
+		SPI2_Instance.countRX = 0;
+		SPI2_Instance.sizeRX = lengthRX;
+		(void) SPI2->DR;
+		while (SPI2_Instance.countRX < lengthRX)
+		{
+			SPI2->DR = DontCareByte;
+			while (!READ_BIT(SPI2->SR, SPI_SR_RXNE));
+			pBuffer[SPI2_Instance.countRX++] = SPI2->DR;
+		}
+		SPI2_Instance.state = SPI_STATE_READY;
+		return SUCCESS;
+	}
+	else if (SPIx == SPI3)
+	{
+		while (SPI3_Instance.state != SPI_STATE_READY);
+		SPI3_Instance.state = SPI_STATE_BUSY_RX;
+		SPI3_Instance.countRX = 0;
+		SPI3_Instance.sizeRX = lengthRX;
+		(void) SPI3->DR;
+		while (SPI3_Instance.countRX < lengthRX)
+		{
+			SPI3->DR = DontCareByte;
+			while (!READ_BIT(SPI3->SR, SPI_SR_RXNE));
+			pBuffer[SPI3_Instance.countRX++] = SPI3->DR;
+		}
+		SPI3_Instance.state = SPI_STATE_READY;
 		return SUCCESS;
 	}
 	return ERROR; // no match SPIx

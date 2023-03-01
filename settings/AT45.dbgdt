@@ -147,7 +147,7 @@
             <IarPane-34101>
                 <expressions>
                     <item>bufferRead</item>
-                    <item></item>
+                    <item />
                 </expressions>
                 <col-names>
                     <item>Expression</item>
