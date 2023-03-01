@@ -1,0 +1,130 @@
+##IAR Ninja build file
+
+
+#Rules
+rule COMPILER_XCL
+  command = C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\common\bin\XclFileGenerator.exe $xclcommand -f "$rspfile_name"
+  description = IAR_NEW_TOOL+++COMPILER_XCL+++$in+++"C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\common\bin\XclFileGenerator.exe" $flags
+  rspfile = $rspfile_name
+  rspfile_content = $flags
+
+rule INDEXER
+  command = C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\common\bin\SourceIndexer.exe $flags
+  depfile = $out.dep
+  description = IAR_NEW_TOOL+++INDEXER+++$out+++"C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\common\bin\SourceIndexer.exe" $flags
+
+rule MAKEBROWSE
+  command = C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\common\bin\makeBrowseData.exe $flags
+  description = IAR_NEW_TOOL+++MAKEBROWSE+++$out+++"C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\common\bin\makeBrowseData.exe" $flags
+
+rule PDBLINK
+  command = C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\common\bin\PbdLink.exe $flags
+  description = IAR_NEW_TOOL+++PDBLINK+++$out+++"C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\common\bin\PbdLink.exe" $flags
+
+
+
+#Build steps
+build E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Config\Sys_Init.xcl : COMPILER_XCL 
+  xclcommand = -source_file "E$:\IAR$ projects\STM32F10x\AT45\Config\Sys_Init.c" -xcl_file "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Config\Sys_Init.xcl" -macro_file "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Config\Sys_Init.tmp" -icc_path "C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\arm\bin\iccarm.exe"
+  flags = "E$:\IAR$ projects\STM32F10x\AT45\Config\Sys_Init.c" -o "E$:\IAR$ projects\STM32F10x\AT45\Debug\Obj\Config" --no_cse --no_unroll --no_inline --no_code_motion --no_tbaa --no_clustering --no_scheduling --debug --endian=little --cpu=Cortex-M3 -e --fpu=None --dlib_config "C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\arm\inc\c\DLib_Config_Full.h" -I "E$:\IAR$ projects\STM32F10x\AT45\Config\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Include\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Souce\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\SPL\inc\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\SPL\src\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\Delay\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\SPI\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\AT45\\" -On -I "C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\arm\CMSIS\Core\Include\\" -I "C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\arm\CMSIS\DSP\Include\\" --predef_macros "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Config\Sys_Init.tmp"
+  rspfile_name = E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Config\Sys_Init.xcl.rsp
+
+build E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Config\system_stm32f10x.xcl : COMPILER_XCL 
+  xclcommand = -source_file "E$:\IAR$ projects\STM32F10x\AT45\Config\system_stm32f10x.c" -xcl_file "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Config\system_stm32f10x.xcl" -macro_file "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Config\system_stm32f10x.tmp" -icc_path "C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\arm\bin\iccarm.exe"
+  flags = "E$:\IAR$ projects\STM32F10x\AT45\Config\system_stm32f10x.c" -o "E$:\IAR$ projects\STM32F10x\AT45\Debug\Obj\Config" --no_cse --no_unroll --no_inline --no_code_motion --no_tbaa --no_clustering --no_scheduling --debug --endian=little --cpu=Cortex-M3 -e --fpu=None --dlib_config "C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\arm\inc\c\DLib_Config_Full.h" -I "E$:\IAR$ projects\STM32F10x\AT45\Config\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Include\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Souce\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\SPL\inc\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\SPL\src\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\Delay\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\SPI\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\AT45\\" -On -I "C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\arm\CMSIS\Core\Include\\" -I "C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\arm\CMSIS\DSP\Include\\" --predef_macros "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Config\system_stm32f10x.tmp"
+  rspfile_name = E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Config\system_stm32f10x.xcl.rsp
+
+build E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\AT45\AT45.xcl : COMPILER_XCL 
+  xclcommand = -source_file "E$:\IAR$ projects\STM32F10x\AT45\Libraries\AT45\AT45.c" -xcl_file "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\AT45\AT45.xcl" -macro_file "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\AT45\AT45.tmp" -icc_path "C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\arm\bin\iccarm.exe"
+  flags = "E$:\IAR$ projects\STM32F10x\AT45\Libraries\AT45\AT45.c" -o "E$:\IAR$ projects\STM32F10x\AT45\Debug\Obj\Libraries\AT45" --no_cse --no_unroll --no_inline --no_code_motion --no_tbaa --no_clustering --no_scheduling --debug --endian=little --cpu=Cortex-M3 -e --fpu=None --dlib_config "C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\arm\inc\c\DLib_Config_Full.h" -I "E$:\IAR$ projects\STM32F10x\AT45\Config\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Include\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Souce\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\SPL\inc\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\SPL\src\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\Delay\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\SPI\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\AT45\\" -On -I "C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\arm\CMSIS\Core\Include\\" -I "C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\arm\CMSIS\DSP\Include\\" --predef_macros "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\AT45\AT45.tmp"
+  rspfile_name = E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\AT45\AT45.xcl.rsp
+
+build E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\Delay\Delay.xcl : COMPILER_XCL 
+  xclcommand = -source_file "E$:\IAR$ projects\STM32F10x\AT45\Libraries\Delay\Delay.c" -xcl_file "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\Delay\Delay.xcl" -macro_file "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\Delay\Delay.tmp" -icc_path "C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\arm\bin\iccarm.exe"
+  flags = "E$:\IAR$ projects\STM32F10x\AT45\Libraries\Delay\Delay.c" -o "E$:\IAR$ projects\STM32F10x\AT45\Debug\Obj\Libraries\Delay" --no_cse --no_unroll --no_inline --no_code_motion --no_tbaa --no_clustering --no_scheduling --debug --endian=little --cpu=Cortex-M3 -e --fpu=None --dlib_config "C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\arm\inc\c\DLib_Config_Full.h" -I "E$:\IAR$ projects\STM32F10x\AT45\Config\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Include\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Souce\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\SPL\inc\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\SPL\src\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\Delay\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\SPI\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\AT45\\" -On -I "C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\arm\CMSIS\Core\Include\\" -I "C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\arm\CMSIS\DSP\Include\\" --predef_macros "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\Delay\Delay.tmp"
+  rspfile_name = E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\Delay\Delay.xcl.rsp
+
+build E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\SPI\SPI.xcl : COMPILER_XCL 
+  xclcommand = -source_file "E$:\IAR$ projects\STM32F10x\AT45\Libraries\SPI\SPI.c" -xcl_file "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\SPI\SPI.xcl" -macro_file "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\SPI\SPI.tmp" -icc_path "C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\arm\bin\iccarm.exe"
+  flags = "E$:\IAR$ projects\STM32F10x\AT45\Libraries\SPI\SPI.c" -o "E$:\IAR$ projects\STM32F10x\AT45\Debug\Obj\Libraries\SPI" --no_cse --no_unroll --no_inline --no_code_motion --no_tbaa --no_clustering --no_scheduling --debug --endian=little --cpu=Cortex-M3 -e --fpu=None --dlib_config "C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\arm\inc\c\DLib_Config_Full.h" -I "E$:\IAR$ projects\STM32F10x\AT45\Config\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Include\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Souce\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\SPL\inc\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\SPL\src\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\Delay\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\SPI\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\AT45\\" -On -I "C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\arm\CMSIS\Core\Include\\" -I "C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\arm\CMSIS\DSP\Include\\" --predef_macros "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\SPI\SPI.tmp"
+  rspfile_name = E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\SPI\SPI.xcl.rsp
+
+build E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\SPL\src\stm32f10x_rcc.xcl : COMPILER_XCL 
+  xclcommand = -source_file "E$:\IAR$ projects\STM32F10x\AT45\Libraries\SPL\src\stm32f10x_rcc.c" -xcl_file "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\SPL\src\stm32f10x_rcc.xcl" -macro_file "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\SPL\src\stm32f10x_rcc.tmp" -icc_path "C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\arm\bin\iccarm.exe"
+  flags = "E$:\IAR$ projects\STM32F10x\AT45\Libraries\SPL\src\stm32f10x_rcc.c" -o "E$:\IAR$ projects\STM32F10x\AT45\Debug\Obj\Libraries\SPL\src" --no_cse --no_unroll --no_inline --no_code_motion --no_tbaa --no_clustering --no_scheduling --debug --endian=little --cpu=Cortex-M3 -e --fpu=None --dlib_config "C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\arm\inc\c\DLib_Config_Full.h" -I "E$:\IAR$ projects\STM32F10x\AT45\Config\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Include\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Souce\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\SPL\inc\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\SPL\src\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\Delay\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\SPI\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\AT45\\" -On -I "C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\arm\CMSIS\Core\Include\\" -I "C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\arm\CMSIS\DSP\Include\\" --predef_macros "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\SPL\src\stm32f10x_rcc.tmp"
+  rspfile_name = E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\SPL\src\stm32f10x_rcc.xcl.rsp
+
+build E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\SPL\src\stm32f10x_spi.xcl : COMPILER_XCL 
+  xclcommand = -source_file "E$:\IAR$ projects\STM32F10x\AT45\Libraries\SPL\src\stm32f10x_spi.c" -xcl_file "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\SPL\src\stm32f10x_spi.xcl" -macro_file "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\SPL\src\stm32f10x_spi.tmp" -icc_path "C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\arm\bin\iccarm.exe"
+  flags = "E$:\IAR$ projects\STM32F10x\AT45\Libraries\SPL\src\stm32f10x_spi.c" -o "E$:\IAR$ projects\STM32F10x\AT45\Debug\Obj\Libraries\SPL\src" --no_cse --no_unroll --no_inline --no_code_motion --no_tbaa --no_clustering --no_scheduling --debug --endian=little --cpu=Cortex-M3 -e --fpu=None --dlib_config "C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\arm\inc\c\DLib_Config_Full.h" -I "E$:\IAR$ projects\STM32F10x\AT45\Config\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Include\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Souce\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\SPL\inc\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\SPL\src\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\Delay\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\SPI\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\AT45\\" -On -I "C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\arm\CMSIS\Core\Include\\" -I "C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\arm\CMSIS\DSP\Include\\" --predef_macros "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\SPL\src\stm32f10x_spi.tmp"
+  rspfile_name = E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\SPL\src\stm32f10x_spi.xcl.rsp
+
+build E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Source\Init.xcl : COMPILER_XCL 
+  xclcommand = -source_file "E$:\IAR$ projects\STM32F10x\AT45\Source\Init.c" -xcl_file "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Source\Init.xcl" -macro_file "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Source\Init.tmp" -icc_path "C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\arm\bin\iccarm.exe"
+  flags = "E$:\IAR$ projects\STM32F10x\AT45\Source\Init.c" -o "E$:\IAR$ projects\STM32F10x\AT45\Debug\Obj\Source" --no_cse --no_unroll --no_inline --no_code_motion --no_tbaa --no_clustering --no_scheduling --debug --endian=little --cpu=Cortex-M3 -e --fpu=None --dlib_config "C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\arm\inc\c\DLib_Config_Full.h" -I "E$:\IAR$ projects\STM32F10x\AT45\Config\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Include\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Souce\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\SPL\inc\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\SPL\src\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\Delay\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\SPI\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\AT45\\" -On -I "C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\arm\CMSIS\Core\Include\\" -I "C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\arm\CMSIS\DSP\Include\\" --predef_macros "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Source\Init.tmp"
+  rspfile_name = E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Source\Init.xcl.rsp
+
+build E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Source\main.xcl : COMPILER_XCL 
+  xclcommand = -source_file "E$:\IAR$ projects\STM32F10x\AT45\Source\main.c" -xcl_file "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Source\main.xcl" -macro_file "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Source\main.tmp" -icc_path "C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\arm\bin\iccarm.exe"
+  flags = "E$:\IAR$ projects\STM32F10x\AT45\Source\main.c" -o "E$:\IAR$ projects\STM32F10x\AT45\Debug\Obj\Source" --no_cse --no_unroll --no_inline --no_code_motion --no_tbaa --no_clustering --no_scheduling --debug --endian=little --cpu=Cortex-M3 -e --fpu=None --dlib_config "C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\arm\inc\c\DLib_Config_Full.h" -I "E$:\IAR$ projects\STM32F10x\AT45\Config\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Include\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Souce\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\SPL\inc\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\SPL\src\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\Delay\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\SPI\\" -I "E$:\IAR$ projects\STM32F10x\AT45\Libraries\AT45\\" -On -I "C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\arm\CMSIS\Core\Include\\" -I "C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 9.0\arm\CMSIS\DSP\Include\\" --predef_macros "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Source\main.tmp"
+  rspfile_name = E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Source\main.xcl.rsp
+
+build E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Config\Sys_Init.pbi : INDEXER E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Config\Sys_Init.xcl |  $
+E$:\IAR$ projects\STM32F10x\AT45\Config\Sys_Init.c
+  flags = "-out=E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Config\Sys_Init.pbi" -f "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Config\Sys_Init.xcl"
+
+build E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Config\system_stm32f10x.pbi : INDEXER E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Config\system_stm32f10x.xcl |  $
+E$:\IAR$ projects\STM32F10x\AT45\Config\system_stm32f10x.c
+  flags = "-out=E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Config\system_stm32f10x.pbi" -f "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Config\system_stm32f10x.xcl"
+
+build E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\AT45\AT45.pbi : INDEXER E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\AT45\AT45.xcl |  $
+E$:\IAR$ projects\STM32F10x\AT45\Libraries\AT45\AT45.c
+  flags = "-out=E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\AT45\AT45.pbi" -f "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\AT45\AT45.xcl"
+
+build E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\Delay\Delay.pbi : INDEXER E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\Delay\Delay.xcl |  $
+E$:\IAR$ projects\STM32F10x\AT45\Libraries\Delay\Delay.c
+  flags = "-out=E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\Delay\Delay.pbi" -f "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\Delay\Delay.xcl"
+
+build E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\SPI\SPI.pbi : INDEXER E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\SPI\SPI.xcl |  $
+E$:\IAR$ projects\STM32F10x\AT45\Libraries\SPI\SPI.c
+  flags = "-out=E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\SPI\SPI.pbi" -f "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\SPI\SPI.xcl"
+
+build E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\SPL\src\stm32f10x_rcc.pbi : INDEXER E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\SPL\src\stm32f10x_rcc.xcl |  $
+E$:\IAR$ projects\STM32F10x\AT45\Libraries\SPL\src\stm32f10x_rcc.c
+  flags = "-out=E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\SPL\src\stm32f10x_rcc.pbi" -f "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\SPL\src\stm32f10x_rcc.xcl"
+
+build E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\SPL\src\stm32f10x_spi.pbi : INDEXER E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\SPL\src\stm32f10x_spi.xcl |  $
+E$:\IAR$ projects\STM32F10x\AT45\Libraries\SPL\src\stm32f10x_spi.c
+  flags = "-out=E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\SPL\src\stm32f10x_spi.pbi" -f "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\SPL\src\stm32f10x_spi.xcl"
+
+build E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Source\Init.pbi : INDEXER E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Source\Init.xcl |  $
+E$:\IAR$ projects\STM32F10x\AT45\Source\Init.c
+  flags = "-out=E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Source\Init.pbi" -f "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Source\Init.xcl"
+
+build E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Source\main.pbi : INDEXER E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Source\main.xcl |  $
+E$:\IAR$ projects\STM32F10x\AT45\Source\main.c
+  flags = "-out=E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Source\main.pbi" -f "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Source\main.xcl"
+
+build E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\AT45.pbw : MAKEBROWSE E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\AT45.pbd
+  flags = "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\AT45.pbd" -output "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\AT45.pbw"
+
+build E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\AT45_part0.pbi : PDBLINK E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Config\Sys_Init.pbi |  $
+E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Config\system_stm32f10x.pbi $
+E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\AT45\AT45.pbi
+  flags = -M "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\AT45_part0.pbi" "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Config\Sys_Init.pbi" "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Config\system_stm32f10x.pbi" "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\AT45\AT45.pbi"
+
+build E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\AT45_part1.pbi : PDBLINK E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\Delay\Delay.pbi |  $
+E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\SPI\SPI.pbi $
+E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\SPL\src\stm32f10x_rcc.pbi
+  flags = -M "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\AT45_part1.pbi" "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\Delay\Delay.pbi" "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\SPI\SPI.pbi" "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\SPL\src\stm32f10x_rcc.pbi"
+
+build E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\AT45_part2.pbi : PDBLINK E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\SPL\src\stm32f10x_spi.pbi |  $
+E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Source\Init.pbi $
+E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Source\main.pbi
+  flags = -M "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\AT45_part2.pbi" "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Libraries\SPL\src\stm32f10x_spi.pbi" "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Source\Init.pbi" "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\Source\main.pbi"
+
+build E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\AT45.pbd : PDBLINK E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\AT45_part0.pbi |  $
+E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\AT45_part1.pbi $
+E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\AT45_part2.pbi
+  flags = -M "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\AT45.pbd" "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\AT45_part0.pbi" "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\AT45_part1.pbi" "E$:\IAR$ projects\STM32F10x\AT45\Debug\BrowseInfo\AT45_part2.pbi"
+

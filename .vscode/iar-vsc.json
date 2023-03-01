@@ -1,0 +1,5 @@
+{
+    "ewp": "${workspaceFolder}\\AT45.ewp",
+    "configuration": "Debug",
+    "toolchain": "C:\\\\Program Files (x86)\\\\IAR Systems\\\\Embedded Workbench 9.0"
+}

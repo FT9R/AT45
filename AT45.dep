@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <fileVersion>5</fileVersion>
+    <fileChecksum>2039499423</fileChecksum>
+    <configuration>
+        <name>Debug</name>
+        <outputs>
+            <file>$TOOLKIT_DIR$\CMSIS\Core\Include\cmsis_version.h</file>
+            <file>$TOOLKIT_DIR$\CMSIS\Core\Include\core_cm3.h</file>
+            <file>$TOOLKIT_DIR$\inc\c\stdio.h</file>
+            <file>$TOOLKIT_DIR$\lib\dl7M_tlf.a</file>
+            <file>$TOOLKIT_DIR$\inc\c\ycheck.h</file>
+            <file>$PROJ_DIR$\Debug\Obj\Config\system_stm32f10x.o</file>
+            <file>$PROJ_DIR$\Libraries\SPL\inc\stm32f10x_pwr.h</file>
+            <file>$TOOLKIT_DIR$\CMSIS\Core\Include\cmsis_compiler.h</file>
+            <file>$PROJ_DIR$\Libraries\SPL\inc\stm32f10x_tim.h</file>
+            <file>$TOOLKIT_DIR$\inc\c\DLib_Config_Full.h</file>
+            <file>$PROJ_DIR$\Debug\Obj\Libraries\Delay\Delay.o</file>
+            <file>$PROJ_DIR$\Debug\Obj\Source\main.o</file>
+            <file>$PROJ_DIR$\Debug\Obj\Config\startup_stm32f10x_cl.o.rsp</file>
+            <file>$TOOLKIT_DIR$\inc\c\stdbool.h</file>
+            <file>$TOOLKIT_DIR$\inc\c\ysizet.h</file>
+            <file>$TOOLKIT_DIR$\inc\c\aarch32\iccarm_builtin.h</file>
+            <file>$PROJ_DIR$\Libraries\SPL\inc\stm32f10x_i2c.h</file>
+            <file>$PROJ_DIR$\Debug\List\AT45.map</file>
+            <file>$TOOLKIT_DIR$\CMSIS\Core\Include\cmsis_iccarm.h</file>
+            <file>$TOOLKIT_DIR$\inc\c\stdlib.h</file>
+            <file>$TOOLKIT_DIR$\inc\c\stdint.h</file>
+            <file>$TOOLKIT_DIR$\inc\c\assert.h</file>
+            <file>$TOOLKIT_DIR$\inc\c\string.h</file>
+            <file>$TOOLKIT_DIR$\inc\c\DLib_Product_string.h</file>
+            <file>$TOOLKIT_DIR$\lib\rt7M_tl.a</file>
+            <file>$TOOLKIT_DIR$\inc\c\yvals.h</file>
+            <file>$PROJ_DIR$\Debug\Obj\Libraries\SPL\src\stm32f10x_spi.o</file>
+            <file>$PROJ_DIR$\Config\system_stm32f10x.c</file>
+            <file>$PROJ_DIR$\Libraries\AT45\AT45.h</file>
+            <file>$PROJ_DIR$\Debug\Obj\Libraries\AT45\AT45.o</file>
+            <file>$PROJ_DIR$\Config\system_stm32f10x.h</file>
+            <file>$PROJ_DIR$\Debug\Obj\Config\startup_stm32f10x_cl.o</file>
+            <file>$TOOLKIT_DIR$\inc\c\DLib_Product_stdlib.h</file>
+            <file>$PROJ_DIR$\Libraries\SPI\SPI.c</file>
+            <file>$TOOLKIT_DIR$\lib\m7M_tl.a</file>
+            <file>$PROJ_DIR$\Debug\Exe\AT45.out</file>
+            <file>$PROJ_DIR$\Config\stm32f10x.h</file>
+            <file>$PROJ_DIR$\Debug\Obj\Config\Sys_Init.o</file>
+            <file>$PROJ_DIR$\Debug\Obj\Libraries\SPI\SPI.o</file>
+            <file>$PROJ_DIR$\Config\Sys_Init.c</file>
+            <file>$PROJ_DIR$\Config\Sys_Init.h</file>
+            <file>$PROJ_DIR$\Libraries\SPL\inc\stm32f10x_spi.h</file>
+            <file>$PROJ_DIR$\Config\stm32f10x_conf.h</file>
+            <file>$PROJ_DIR$\Libraries\Delay\Delay.c</file>
+            <file>$PROJ_DIR$\Source\main.c</file>
+            <file>$PROJ_DIR$\Libraries\SPL\src\stm32f10x_rcc.c</file>
+            <file>$PROJ_DIR$\Config\startup_stm32f10x_cl.s</file>
+            <file>$PROJ_DIR$\Libraries\SPL\inc\misc.h</file>
+            <file>$TOOLKIT_DIR$\lib\shb_l.a</file>
+            <file>$PROJ_DIR$\Include\main.h</file>
+            <file>$PROJ_DIR$\Source\Init.c</file>
+            <file>$PROJ_DIR$\Libraries\SPL\inc\stm32f10x_rcc.h</file>
+            <file>$PROJ_DIR$\Libraries\Delay\Delay.h</file>
+            <file>$PROJ_DIR$\Libraries\SPI\SPI.h</file>
+            <file>$PROJ_DIR$\Libraries\SPL\src\stm32f10x_spi.c</file>
+            <file>$PROJ_DIR$\Debug\Obj\Source\Init.o</file>
+            <file>$PROJ_DIR$\Libraries\SPL\inc\stm32f10x_gpio.h</file>
+            <file>$PROJ_DIR$\Libraries\AT45\AT45.c</file>
+            <file>$PROJ_DIR$\Include\Init.h</file>
+            <file>$TOOLKIT_DIR$\config\linker\ST\stm32f107xC.icf</file>
+            <file>$TOOLKIT_DIR$\inc\c\DLib_Defaults.h</file>
+            <file>$PROJ_DIR$\Debug\Obj\Libraries\SPL\src\stm32f10x_rcc.o</file>
+            <file>$TOOLKIT_DIR$\inc\c\DLib_Product.h</file>
+        </outputs>
+        <file>
+            <name>[ROOT_NODE]</name>
+            <outputs>
+                <tool>
+                    <name>ILINK</name>
+                    <file> 35 17</file>
+                </tool>
+            </outputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\Config\system_stm32f10x.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 5</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 7 18 0 1 9 60 62 15 20 4 25 36 42 30 47 56 16 6 51 41 8</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\Libraries\SPI\SPI.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 38</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 7 18 0 1 9 60 62 32 23 15 13 20 19 22 4 14 25 36 42 30 53 47 56 16 6 51 41 8</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\Debug\Exe\AT45.out</name>
+            <outputs>
+                <tool>
+                    <name>ILINK</name>
+                    <file> 17</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ILINK</name>
+                    <file> 59 3 34 24 48 37 31 5 29 10 38 61 26 55 11</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\Config\Sys_Init.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 37</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 7 18 0 1 9 60 62 15 20 4 25 40 36 42 30 47 56 16 6 51 41 8</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\Libraries\Delay\Delay.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 10</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 7 18 0 1 9 60 62 15 21 20 4 25 36 42 30 52 47 56 16 6 51 41 8</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\Source\main.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 11</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 7 18 0 1 9 60 62 32 23 15 21 13 20 2 19 22 4 14 25 40 36 42 30 58 49 28 52 53 47 56 16 6 51 41 8</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\Libraries\SPL\src\stm32f10x_rcc.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 61</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 7 18 0 1 9 60 62 15 20 4 25 36 42 30 47 56 16 6 51 41 8</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\Config\startup_stm32f10x_cl.s</name>
+            <outputs>
+                <tool>
+                    <name>AARM</name>
+                    <file> 31</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>AARM</name>
+                    <file> 12</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\Source\Init.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 55</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 7 18 0 1 9 60 62 32 23 15 13 20 19 22 4 14 25 36 42 30 58 53 47 56 16 6 51 41 8</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\Libraries\SPL\src\stm32f10x_spi.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 26</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 7 18 0 1 9 60 62 15 20 4 25 36 42 30 47 56 16 6 51 41 8</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\Libraries\AT45\AT45.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 29</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 7 18 0 1 9 60 62 32 23 15 21 13 20 19 22 4 14 25 36 42 30 28 52 53 47 56 16 6 51 41 8</file>
+                </tool>
+            </inputs>
+        </file>
+        <forcedrebuild>
+            <name>[REBUILD_ALL]</name>
+        </forcedrebuild>
+    </configuration>
+    <configuration>
+        <name>Release</name>
+        <outputs />
+        <forcedrebuild>
+            <name>[MULTI_TOOL]</name>
+            <tool>ILINK</tool>
+        </forcedrebuild>
+    </configuration>
+</project>
