@@ -7,5 +7,10 @@
 			"path": "../AT45"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"files.associations": {
+			"main.h": "c",
+			"init.h": "c"
+		}
+	}
 }
