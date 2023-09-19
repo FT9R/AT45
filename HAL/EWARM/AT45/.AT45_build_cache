@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BuildDb>
+    <Tool>
+        <Name>linker</Name>
+        <Parent>
+            <Path>E:\IAR projects\STM32F4xx\AT45\HAL\EWARM\AT45\Exe\AT45.out</Path>
+            <Output>
+                <Path>E:\IAR projects\STM32F4xx\AT45\HAL\EWARM\AT45\List\AT45.map</Path>
+            </Output>
+        </Parent>
+    </Tool>
+</BuildDb>

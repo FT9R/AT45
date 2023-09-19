@@ -1,0 +1,18 @@
+{
+  "workspace": {
+    "path": "${workspaceFolder}\\SPL\\AT45.eww"
+  },
+  "workspaces": {
+    "${workspaceFolder}\\SPL\\AT45.eww": {
+      "configs": {
+        "${workspaceFolder}\\SPL\\AT45.ewp": "Debug"
+      },
+      "selected": {
+        "path": "${workspaceFolder}\\SPL\\AT45.ewp"
+      }
+    }
+  },
+  "workbench": {
+    "path": "C:\\\\Program Files\\\\IAR Systems\\\\Embedded Workbench 9.2"
+  }
+}
