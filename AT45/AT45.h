@@ -90,7 +90,7 @@ ErrorStatus AT45_Init(AT45_HandleTypeDef *AT45_Handle, SPI_HandleTypeDef *hspix,
 /**
  * @brief Writes data to AT45 from external buffer
  * @param AT45_Handle: pointer to the device handle structure
- * @param  buf: pointer to external buffer, that contains the data to write
+ * @param buf: pointer to external buffer, that contains the data to write
  * @param dataLength: number of bytes to write
  * @param address: page address to write (multiple of 512 bytes)
  * @param trailingCRC: insert or not insert CRC at the end of frame
@@ -104,7 +104,7 @@ ErrorStatus AT45_Write(AT45_HandleTypeDef *AT45_Handle, const uint8_t *buf, uint
 /**
  * @brief Reades data from AT45 to external buffer
  * @param AT45_Handle: pointer to the device handle structure
- * @param  buf: pointer to external buffer, that will contain the received data
+ * @param buf: pointer to external buffer, that will contain the received data
  * @param dataLength: number of bytes to read
  * @param address: page address to read (multiple of 512 bytes)
  * @param trailingCRC: compare or not compare CRC at the end of frame
