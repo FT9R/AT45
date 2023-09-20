@@ -70,6 +70,9 @@ ErrorStatus AT45_Write(AT45_HandleTypeDef *AT45_Handle, const uint8_t *buf, uint
     if (address > (AT45_PAGE_SIZE * (AT45_Handle->numberOfPages - 1)))
         return AT45_Handle->status; // The boundaries of write operation beyond memory
 
+    if (AT45_WaitWithTimeout(AT45_Handle, AT45_RESPONSE_TIMEOUT) != SUCCESS)
+        return AT45_Handle->status;
+
     /* Middle buffer operations */
     uint8_t *midBuf = malloc(sizeof(*midBuf) * dataLength);
     if (midBuf == NULL)
@@ -85,9 +88,6 @@ ErrorStatus AT45_Write(AT45_HandleTypeDef *AT45_Handle, const uint8_t *buf, uint
     else
         /* Pure data */
         memcpy(midBuf, buf, dataLength);
-
-    if (AT45_WaitWithTimeout(AT45_Handle, AT45_RESPONSE_TIMEOUT) != SUCCESS)
-        return AT45_Handle->status;
 
     /* Buffer write */
     /* Command */
@@ -164,13 +164,13 @@ ErrorStatus AT45_Read(AT45_HandleTypeDef *AT45_Handle, uint8_t *buf, uint16_t da
     if (address > (AT45_PAGE_SIZE * (AT45_Handle->numberOfPages - 1)))
         return AT45_Handle->status; // The boundaries of read operation beyond memory
 
+    if (AT45_WaitWithTimeout(AT45_Handle, AT45_RESPONSE_TIMEOUT) != SUCCESS)
+        return AT45_Handle->status;
+
     /* Middle buffer operations */
     uint8_t *midBuf = malloc(sizeof(*midBuf) * dataLength);
     if (midBuf == NULL)
         return AT45_Handle->status; // Insufficient heap memory available
-
-    if (AT45_WaitWithTimeout(AT45_Handle, AT45_RESPONSE_TIMEOUT) != SUCCESS)
-        return AT45_Handle->status;
 
     /* Command */
     CS_LOW(AT45_Handle);
@@ -198,7 +198,10 @@ ErrorStatus AT45_Read(AT45_HandleTypeDef *AT45_Handle, uint8_t *buf, uint16_t da
     {
         CRC16 = ModBus_CRC(midBuf, dataLength - sizeof(uint16_t));
         if ((midBuf[dataLength - 2] != ((CRC16 >> 8) & 0xFF)) || (midBuf[dataLength - 1] != (CRC16 & 0xFF)))
+        {
+            free(midBuf);
             return AT45_Handle->status; // CRC error
+        }
     }
 
     /* Copy middle buffer content to the destination buffer */
