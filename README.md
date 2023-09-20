@@ -32,6 +32,10 @@ To make the use of the library as safe and understandable as possible, any opera
 ```C
 #include "AT45.h"
 ```
+* Declare the device handle:
+```C
+AT45_HandleTypeDef AT45_Handle;
+```
 * Provide defines regarding to Chip Select pin:
 ```C
 #define CS0_Pin       GPIO_PIN_0
