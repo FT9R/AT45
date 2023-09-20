@@ -60,7 +60,7 @@ ErrorStatus AT45_Write(AT45_HandleTypeDef *AT45_Handle, const uint8_t *buf, uint
     uint16_t CRC16 = 0x0000;
 
     /* Argument guards */
-    if (dataLength == 0)
+    if ((dataLength == 0) || (buf == NULL))
         return AT45_Handle->status;
     if (trailingCRC)
         dataLength += sizeof(uint16_t);
@@ -154,7 +154,7 @@ ErrorStatus AT45_Read(AT45_HandleTypeDef *AT45_Handle, uint8_t *buf, uint16_t da
     uint16_t CRC16 = 0x0000;
 
     /* Argument guards */
-    if (dataLength == 0)
+    if ((dataLength == 0) || (buf == NULL))
         return AT45_Handle->status;
     if (trailingCRC)
         dataLength += sizeof(uint16_t);
