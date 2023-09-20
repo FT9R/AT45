@@ -23,8 +23,7 @@ ErrorStatus AT45_Init(AT45_HandleTypeDef *AT45_Handle, SPI_HandleTypeDef *hspix,
         return AT45_Handle->status;
 
     /* Get the ManufacturerID and DeviceID */
-    if (AT45_ReadID(AT45_Handle) != SUCCESS)
-        return AT45_Handle->status;
+    AT45_ReadID(AT45_Handle);
     if (AT45_Handle->ID[0] != AT45_MANUFACTURER_ID)
         return AT45_Handle->status;
 
@@ -190,7 +189,7 @@ ErrorStatus AT45_Read(AT45_HandleTypeDef *AT45_Handle, uint8_t *buf, uint16_t da
     AT45_SPI_Transmit(AT45_Handle->hspix, AT45_Handle->CMD, sizeof(AT45_Handle->CMD[0]), AT45_TX_TIMEOUT);
     AT45_SPI_Transmit(AT45_Handle->hspix, AT45_Handle->CMD, sizeof(AT45_Handle->CMD[0]), AT45_TX_TIMEOUT);
 
-    /* Reading */
+    /* Data read */
     AT45_SPI_Receive(AT45_Handle->hspix, midBuf, dataLength, AT45_RX_TIMEOUT);
     CS_HIGH(AT45_Handle);
 
