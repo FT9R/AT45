@@ -1,5 +1,5 @@
 # Description
-A simple library designed to perform basic write/read operations with serial flash memory devices of the AT45DB family. 
+A simple library designed to perform basic write/read and erase operations with serial flash memory devices of the AT45DB family. 
 ## Features
 * Many devices on the same bus are supported with its dedicated handles:
 ```C
