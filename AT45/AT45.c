@@ -18,8 +18,8 @@ ErrorStatus AT45_Init(AT45_HandleTypeDef *AT45_Handle, SPI_HandleTypeDef *hspix,
     AT45_Handle->status = ERROR;
 
     /* Check for SPI1-3 match */
-    if ((AT45_Handle->hspix->Instance != SPI1) && (AT45_Handle->hspix->Instance != SPI2)
-        && (AT45_Handle->hspix->Instance != SPI3))
+    if ((AT45_Handle->hspix->Instance != SPI1) && (AT45_Handle->hspix->Instance != SPI2) &&
+        (AT45_Handle->hspix->Instance != SPI3))
         return AT45_Handle->status;
 
     /* Get the ManufacturerID and DeviceID */
