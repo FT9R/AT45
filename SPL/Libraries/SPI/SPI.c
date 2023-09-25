@@ -1,10 +1,18 @@
 #include "SPI.h"
 
 static ErrorStatus SPI_WaitWithTimeout(SPI_HandleTypeDef *hspix, uint32_t timeout, uint32_t tickStart);
-static void SPI_Error_Handler(SPI_HandleTypeDef *hspix);
 
-void SPIx_Init(SPI_HandleTypeDef *hspix, uint16_t SPI_Mode, uint16_t SPI_BaudRatePrescaler)
+SPI_StateTypeDef SPIx_Init(SPI_HandleTypeDef *hspix, uint16_t SPI_Mode, uint16_t SPI_BaudRatePrescaler)
 {
+    /* Prepare and reset the handle members */
+    hspix->sizeRX = 0;
+    hspix->sizeTX = 0;
+    hspix->countRX = 0;
+    hspix->countTX = 0;
+    hspix->pBuffRX = NULL;
+    hspix->pBuffTX = NULL;
+    hspix->state = SPI_STATE_RESET;
+
     /* Periphery clock enable */
     switch ((uint32_t) hspix->Instance)
     {
@@ -21,17 +29,8 @@ void SPIx_Init(SPI_HandleTypeDef *hspix, uint16_t SPI_Mode, uint16_t SPI_BaudRat
         break;
 
     default:
-        SPI_Error_Handler(hspix); // No match for SPIx
+        return hspix->state; // No match for SPIx
     }
-
-    /* Prepare and reset the handle members */
-    hspix->sizeRX = 0;
-    hspix->sizeTX = 0;
-    hspix->countRX = 0;
-    hspix->countTX = 0;
-    hspix->pBuffRX = NULL;
-    hspix->pBuffTX = NULL;
-    hspix->state = SPI_STATE_READY;
 
     /* Configure the periphery */
     SPI_I2S_DeInit(hspix->Instance);
@@ -47,23 +46,19 @@ void SPIx_Init(SPI_HandleTypeDef *hspix, uint16_t SPI_Mode, uint16_t SPI_BaudRat
     SPI_Init(hspix->Instance, &SPI_InitStruct);
     SPI_SSOutputCmd(hspix->Instance, ENABLE);
     SPI_Cmd(hspix->Instance, ENABLE);
+
+    return hspix->state = SPI_STATE_READY;
 }
 
-ErrorStatus SPI_Transmit(SPI_HandleTypeDef *hspix, const uint8_t *pData, uint16_t size, uint32_t timeout)
+SPI_StateTypeDef SPI_Transmit(SPI_HandleTypeDef *hspix, const uint8_t *pData, uint16_t size, uint32_t timeout)
 {
     uint32_t tickStart = uwTick;
 
     if (hspix->state != SPI_STATE_READY)
-    {
-        SPI_Error_Handler(hspix);
-        return ERROR;
-    }
+        return hspix->state;
 
     if ((pData == NULL) || (size == 0))
-    {
-        SPI_Error_Handler(hspix);
-        return ERROR;
-    }
+        return hspix->state = SPI_STATE_ERROR;
 
     hspix->state = SPI_STATE_BUSY_TX;
     hspix->countTX = 0;
@@ -73,40 +68,27 @@ ErrorStatus SPI_Transmit(SPI_HandleTypeDef *hspix, const uint8_t *pData, uint16_
     {
         /* TXE bit polling */
         if (SPI_WaitWithTimeout(hspix, timeout, tickStart) != SUCCESS)
-        {
-            SPI_Error_Handler(hspix);
-            return ERROR;
-        }
+            return hspix->state = SPI_STATE_ERROR;
         hspix->Instance->DR = pData[hspix->countTX++];
     }
-    hspix->state = SPI_STATE_BUSY;
 
     /* BSY bit polling */
+    hspix->state = SPI_STATE_BUSY;
     if (SPI_WaitWithTimeout(hspix, timeout, tickStart) != SUCCESS)
-    {
-        SPI_Error_Handler(hspix);
-        return ERROR;
-    }
-    hspix->state = SPI_STATE_READY;
+        return hspix->state = SPI_STATE_ERROR;
 
-    return SUCCESS;
+    return hspix->state = SPI_STATE_READY;
 }
 
-ErrorStatus SPI_Receive(SPI_HandleTypeDef *hspix, uint8_t *pData, uint16_t size, uint32_t timeout)
+SPI_StateTypeDef SPI_Receive(SPI_HandleTypeDef *hspix, uint8_t *pData, uint16_t size, uint32_t timeout)
 {
     uint32_t tickStart = uwTick;
 
     if (hspix->state != SPI_STATE_READY)
-    {
-        SPI_Error_Handler(hspix);
-        return ERROR;
-    }
+        return hspix->state;
 
     if ((pData == NULL) || (size == 0))
-    {
-        SPI_Error_Handler(hspix);
-        return ERROR;
-    }
+        return hspix->state = SPI_STATE_ERROR;
 
     hspix->state = SPI_STATE_BUSY_RX;
     hspix->countRX = 0;
@@ -119,15 +101,11 @@ ErrorStatus SPI_Receive(SPI_HandleTypeDef *hspix, uint8_t *pData, uint16_t size,
 
         /* RXNE bit polling */
         if (SPI_WaitWithTimeout(hspix, timeout, tickStart) != SUCCESS)
-        {
-            SPI_Error_Handler(hspix);
-            return ERROR;
-        }
+            return hspix->state = SPI_STATE_ERROR;
         pData[hspix->countRX++] = hspix->Instance->DR;
     }
-    hspix->state = SPI_STATE_READY;
 
-    return SUCCESS;
+    return hspix->state = SPI_STATE_READY;
 }
 
 static ErrorStatus SPI_WaitWithTimeout(SPI_HandleTypeDef *hspix, uint32_t timeout, uint32_t tickStart)
@@ -135,7 +113,7 @@ static ErrorStatus SPI_WaitWithTimeout(SPI_HandleTypeDef *hspix, uint32_t timeou
     /* Wait for data to be transmitted */
     if (hspix->state == SPI_STATE_BUSY_TX)
     {
-        if (timeout == 0) // Infinite timeout
+        if (timeout == INFINITE_TIMEOUT)
         {
             while (!READ_BIT(hspix->Instance->SR, SPI_SR_TXE)) {}
         }
@@ -153,7 +131,7 @@ static ErrorStatus SPI_WaitWithTimeout(SPI_HandleTypeDef *hspix, uint32_t timeou
     /* Wait for data to be received */
     else if (hspix->state == SPI_STATE_BUSY_RX)
     {
-        if (timeout == 0) // Infinite timeout
+        if (timeout == INFINITE_TIMEOUT)
         {
             while (!READ_BIT(hspix->Instance->SR, SPI_SR_RXNE)) {}
         }
@@ -171,7 +149,7 @@ static ErrorStatus SPI_WaitWithTimeout(SPI_HandleTypeDef *hspix, uint32_t timeou
     /* Wait for shift register to be empty */
     else if (hspix->state == SPI_STATE_BUSY)
     {
-        if (timeout == 0)
+        if (timeout == INFINITE_TIMEOUT)
         {
             while (READ_BIT(hspix->Instance->SR, SPI_SR_BSY)) {}
         }
@@ -188,14 +166,6 @@ static ErrorStatus SPI_WaitWithTimeout(SPI_HandleTypeDef *hspix, uint32_t timeou
 
     /* Unexpected state */
     return ERROR;
-}
-
-static void SPI_Error_Handler(SPI_HandleTypeDef *hspix)
-{
-    hspix->state = SPI_STATE_ERROR;
-
-    /* FIXME: исключить после отладки */
-    Error_Handler();
 }
 
 /* Under construction */

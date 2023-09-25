@@ -4,12 +4,8 @@
 #include "Delay.h"
 #include <stdlib.h>
 
-#define ReadBufferSize  100
-#define WriteBufferSize 100
+#define INFINITE_TIMEOUT 0
 
-/**
- * @brief SPI State structure definition
- */
 typedef enum {
     SPI_STATE_RESET = 0x00U, // Peripheral not Initialized
     SPI_STATE_READY = 0x01U, // Peripheral Initialized and ready for use
@@ -33,37 +29,33 @@ typedef struct
     SPI_StateTypeDef state;
 } SPI_HandleTypeDef;
 
-extern void Error_Handler(void);
-
 /**
- * @brief Initialize the SPI according to the specified parameters
- *
+ * @brief Initializes the SPI according to the specified parameters
  * @param hspix: pointer to target SPI handle
  * @param SPI_Mode: SPI_Mode_Master or SPI_Mode_Slave
  * @param SPI_BaudRatePrescaler: SPI_BaudRatePrescaler_2...4,8,16,32,64,128,256
+ * @return SPI status after current operation
  */
-void SPIx_Init(SPI_HandleTypeDef *hspix, uint16_t SPI_Mode, uint16_t SPI_BaudRatePrescaler);
+SPI_StateTypeDef SPIx_Init(SPI_HandleTypeDef *hspix, uint16_t SPI_Mode, uint16_t SPI_BaudRatePrescaler);
 
 /**
  * @brief Transmit an amount of data in blocking mode
- *
  * @param hspix: pointer to target SPI handle
  * @param pData: pointer to data source buffer
  * @param size: number of bytes to transmit
  * @param timeout: timeout duration
- * @return ErrorStatus: SUCCESS or ERROR
+ * @return SPI status after current operation
  */
-ErrorStatus SPI_Transmit(SPI_HandleTypeDef *hspix, const uint8_t *pData, uint16_t size, uint32_t timeout);
+SPI_StateTypeDef SPI_Transmit(SPI_HandleTypeDef *hspix, const uint8_t *pData, uint16_t size, uint32_t timeout);
 
 /**
  * @brief Receive an amount of data in blocking mode
- *
  * @param hspix: pointer to target SPI handle
  * @param pData: pointer to data destination buffer
  * @param size: number of bytes to receive
  * @param timeout: timeout duration
- * @return ErrorStatus: SUCCESS or ERROR
+ * @return SPI status after current operation
  */
-ErrorStatus SPI_Receive(SPI_HandleTypeDef *hspix, uint8_t *pData, uint16_t size, uint32_t timeout);
+SPI_StateTypeDef SPI_Receive(SPI_HandleTypeDef *hspix, uint8_t *pData, uint16_t size, uint32_t timeout);
 
 #endif
