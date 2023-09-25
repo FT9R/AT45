@@ -5,7 +5,8 @@ void AT45_SPI_Transmit(SPI_HandleTypeDef *hspix, uint8_t *pData, uint16_t size, 
 #ifdef USE_HAL_DRIVER
     HAL_SPI_Transmit(hspix, pData, size, timeout);
 #else
-    SPI_Transmit(hspix, pData, size, timeout);
+    if (SPI_Transmit(hspix, pData, size, timeout) != SPI_STATE_READY)
+        Error_Handler();
 #endif
 }
 
@@ -14,7 +15,8 @@ void AT45_SPI_Receive(SPI_HandleTypeDef *hspix, uint8_t *pData, uint16_t size, u
 #ifdef USE_HAL_DRIVER
     HAL_SPI_Receive(hspix, pData, size, timeout);
 #else
-    SPI_Receive(hspix, pData, size, timeout);
+    if (SPI_Receive(hspix, pData, size, timeout) != SPI_STATE_READY)
+        Error_Handler();
 #endif
 }
 
