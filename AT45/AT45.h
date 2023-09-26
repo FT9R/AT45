@@ -59,11 +59,16 @@ enum AT45_Device_e { AT45DB021 = 0x23, AT45DB041, AT45DB081, AT45DB161, AT45DB32
     DEVICE_HANDLE->addressBytes[1] = (uint8_t) (ADDRESS >> 8);  \
     DEVICE_HANDLE->addressBytes[2] = (uint8_t) (ADDRESS >> 0)
 
-typedef enum { AT45_PAGE_ERASE, AT45_BLOCK_ERASE, AT45_SECTOR_ERASE, AT45_CHIP_ERASE } eraseInstruction_t;
+typedef enum eraseInstruction_e {
+    AT45_PAGE_ERASE,
+    AT45_BLOCK_ERASE,
+    AT45_SECTOR_ERASE,
+    AT45_CHIP_ERASE
+} eraseInstruction_t;
 
-typedef enum { AT45_WAIT_NO, AT45_WAIT_DELAY, AT45_WAIT_BUSY } waitForTask_t;
+typedef enum waitForTask_e { AT45_WAIT_NO, AT45_WAIT_DELAY, AT45_WAIT_BUSY } waitForTask_t;
 
-typedef struct
+typedef struct AT45_HandleTypeDef_s
 {
     uint8_t ID[5];
     uint8_t statusRegister[2];
