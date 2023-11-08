@@ -56,14 +56,15 @@ ErrorStatus AT45_Write(AT45_HandleTypeDef *AT45_Handle, const uint8_t *buf, uint
                        bool trailingCRC, bool pageErase, waitForTask_t waitForTask)
 {
     AT45_Handle->status = ERROR;
+    uint16_t frameLength = dataLength;
     uint16_t CRC16 = 0x0000;
 
     /* Argument guards */
     if ((dataLength == 0) || (buf == NULL))
         return AT45_Handle->status;
     if (trailingCRC)
-        dataLength += sizeof(uint16_t);
-    if (dataLength > AT45_PAGE_SIZE)
+        frameLength += sizeof(CRC16);
+    if (frameLength > AT45_PAGE_SIZE)
         return AT45_Handle->status;
     if ((address % AT45_PAGE_SIZE) != 0)
         return AT45_Handle->status; // Only first byte of the page can be pointed as the start byte
@@ -72,22 +73,6 @@ ErrorStatus AT45_Write(AT45_HandleTypeDef *AT45_Handle, const uint8_t *buf, uint
 
     if (AT45_WaitWithTimeout(AT45_Handle, AT45_RESPONSE_TIMEOUT) != SUCCESS)
         return AT45_Handle->status;
-
-    /* Middle buffer operations */
-    uint8_t *midBuf = malloc(sizeof(*midBuf) * dataLength);
-    if (midBuf == NULL)
-        return AT45_Handle->status; // Insufficient heap memory available
-    if (trailingCRC)
-    {
-        /* Data + checksum */
-        memcpy(midBuf, buf, dataLength - sizeof(uint16_t));
-        CRC16 = ModBus_CRC(buf, dataLength - sizeof(uint16_t));
-        midBuf[dataLength - 2] = ((CRC16 >> 8) & 0xFF);
-        midBuf[dataLength - 1] = (CRC16 & 0xFF);
-    }
-    else
-        /* Pure data */
-        memcpy(midBuf, buf, dataLength);
 
     /* Buffer write */
     /* Command */
@@ -102,8 +87,14 @@ ErrorStatus AT45_Write(AT45_HandleTypeDef *AT45_Handle, const uint8_t *buf, uint
                       AT45_TX_TIMEOUT);
 
     /* AT45 SRAM buffer filling by user data */
-    AT45_SPI_Transmit(AT45_Handle->hspix, midBuf, dataLength, AT45_TX_TIMEOUT);
-    free(midBuf);
+    /* Pure data */
+    AT45_SPI_Transmit(AT45_Handle->hspix, (uint8_t *) buf, dataLength, AT45_TX_TIMEOUT);
+    /* Checksum */
+    if (trailingCRC)
+    {
+        CRC16 = ModBus_CRC(buf, dataLength);
+        AT45_SPI_Transmit(AT45_Handle->hspix, (uint8_t *) &CRC16, sizeof(CRC16), AT45_TX_TIMEOUT);
+    }
     CS_HIGH(AT45_Handle);
 
     /* Page program */
@@ -150,14 +141,15 @@ ErrorStatus AT45_Read(AT45_HandleTypeDef *AT45_Handle, uint8_t *buf, uint16_t da
                       bool trailingCRC)
 {
     AT45_Handle->status = ERROR;
+    uint16_t frameLength = dataLength;
     uint16_t CRC16 = 0x0000;
 
     /* Argument guards */
     if ((dataLength == 0) || (buf == NULL))
         return AT45_Handle->status;
     if (trailingCRC)
-        dataLength += sizeof(uint16_t);
-    if (dataLength > AT45_PAGE_SIZE)
+        frameLength += sizeof(CRC16);
+    if (frameLength > AT45_PAGE_SIZE)
         return AT45_Handle->status;
     if ((address % AT45_PAGE_SIZE) != 0)
         return AT45_Handle->status; // Only first byte of the page can be pointed as the start byte
@@ -168,7 +160,7 @@ ErrorStatus AT45_Read(AT45_HandleTypeDef *AT45_Handle, uint8_t *buf, uint16_t da
         return AT45_Handle->status;
 
     /* Middle buffer operations */
-    uint8_t *midBuf = malloc(sizeof(*midBuf) * dataLength);
+    uint8_t *midBuf = malloc(sizeof(*midBuf) * frameLength);
     if (midBuf == NULL)
         return AT45_Handle->status; // Insufficient heap memory available
 
@@ -190,14 +182,14 @@ ErrorStatus AT45_Read(AT45_HandleTypeDef *AT45_Handle, uint8_t *buf, uint16_t da
     AT45_SPI_Transmit(AT45_Handle->hspix, AT45_Handle->CMD, sizeof(AT45_Handle->CMD[0]), AT45_TX_TIMEOUT);
 
     /* Data read */
-    AT45_SPI_Receive(AT45_Handle->hspix, midBuf, dataLength, AT45_RX_TIMEOUT);
+    AT45_SPI_Receive(AT45_Handle->hspix, midBuf, frameLength, AT45_RX_TIMEOUT);
     CS_HIGH(AT45_Handle);
 
     /* Checksum compare */
     if (trailingCRC)
     {
-        CRC16 = ModBus_CRC(midBuf, dataLength - sizeof(uint16_t));
-        if ((midBuf[dataLength - 2] != ((CRC16 >> 8) & 0xFF)) || (midBuf[dataLength - 1] != (CRC16 & 0xFF)))
+        CRC16 = ModBus_CRC(midBuf, dataLength);
+        if (memcmp(&midBuf[dataLength], &CRC16, sizeof(CRC16)) != 0)
         {
             free(midBuf);
             return AT45_Handle->status; // CRC error
@@ -205,10 +197,7 @@ ErrorStatus AT45_Read(AT45_HandleTypeDef *AT45_Handle, uint8_t *buf, uint16_t da
     }
 
     /* Copy middle buffer content to the destination buffer */
-    if (trailingCRC)
-        memcpy(buf, midBuf, dataLength - sizeof(uint16_t));
-    else
-        memcpy(buf, midBuf, dataLength);
+    memcpy(buf, midBuf, dataLength);
     free(midBuf);
 
     return AT45_Handle->status = SUCCESS;
@@ -385,6 +374,9 @@ static ErrorStatus AT45_WaitWithTimeout(AT45_HandleTypeDef *AT45_Handle, uint32_
 
 static ErrorStatus AT45_ConfigurePageSize(AT45_HandleTypeDef *AT45_Handle, uint16_t pageSize)
 {
+    if (AT45_WaitWithTimeout(AT45_Handle, AT45_RESPONSE_TIMEOUT) != SUCCESS)
+        return ERROR;
+
     if (pageSize == 512)
     {
         AT45_Handle->CMD[0] = AT45_CMD_CONFIGURE_BINARY_PAGE_SIZE_0;
@@ -401,9 +393,6 @@ static ErrorStatus AT45_ConfigurePageSize(AT45_HandleTypeDef *AT45_Handle, uint1
     }
     else
         return ERROR; // Incorrect page size
-
-    if (AT45_WaitWithTimeout(AT45_Handle, AT45_RESPONSE_TIMEOUT) != SUCCESS)
-        return ERROR;
 
     /* Page size configuration */
     CS_LOW(AT45_Handle);

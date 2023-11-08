@@ -16,7 +16,7 @@
         <ShowSource>1</ShowSource>
     </Trace1>
     <DebugChecksum>
-        <Checksum>3271798043</Checksum>
+        <Checksum>3618954037</Checksum>
     </DebugChecksum>
     <Disassembly>
         <MixedMode>1</MixedMode>
@@ -45,12 +45,12 @@
         <MultiCoreRunAll>1</MultiCoreRunAll>
     </Simulator>
     <StLinkDriver>
-        <stlinkserialNo>303030303030303030303031</stlinkserialNo>
+        <stlinkserialNo>55FF70067287555137521067</stlinkserialNo>
         <stlinkfoundProbes />
-        <stlinkResetStyle>0</stlinkResetStyle>
-        <stlinkResetStrategy>0</stlinkResetStrategy>
         <LeaveTargetRunning>_ 0</LeaveTargetRunning>
         <CStepIntDis>_ 0</CStepIntDis>
+        <stlinkResetStyle>0</stlinkResetStyle>
+        <stlinkResetStrategy>0</stlinkResetStrategy>
     </StLinkDriver>
     <PlDriver>
         <FirstRun>0</FirstRun>
