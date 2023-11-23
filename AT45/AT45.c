@@ -30,7 +30,7 @@ ErrorStatus AT45_Init(AT45_HandleTypeDef *AT45_Handle, SPI_HandleTypeDef *hspix,
     /* Force page size to 512 */
     /* Check actual page size to prevent override */
     AT45_ReadStatus(AT45_Handle);
-    if (!READ_BIT(AT45_Handle->statusRegister[0], 1 << 0))
+    if (!READ_BIT(AT45_Handle->statusRegister[0], 1u << 0))
     {
         if (AT45_ConfigurePageSize(AT45_Handle, 512) != SUCCESS)
             return AT45_Handle->status;
@@ -71,13 +71,17 @@ ErrorStatus AT45_Write(AT45_HandleTypeDef *AT45_Handle, const uint8_t *buf, uint
     if (address > (AT45_PAGE_SIZE * (AT45_Handle->numberOfPages - 1)))
         return AT45_Handle->status; // The boundaries of write operation beyond memory
 
+    /* Checksum calculate */
+    if (trailingCRC)
+        CRC16 = ModBus_CRC(buf, dataLength);
+
     if (AT45_WaitWithTimeout(AT45_Handle, AT45_RESPONSE_TIMEOUT) != SUCCESS)
         return AT45_Handle->status;
 
     /* Buffer write */
     /* Command */
-    CS_LOW(AT45_Handle);
     AT45_Handle->CMD[0] = AT45_CMD_BUFFER_1_WRITE;
+    CS_LOW(AT45_Handle);
     AT45_SPI_Transmit(AT45_Handle->hspix, AT45_Handle->CMD, sizeof(AT45_Handle->CMD[0]), AT45_TX_TIMEOUT);
 
     /* BFA8-BFA0 - Address of the first byte in the SRAM buffer to be written */
@@ -87,23 +91,21 @@ ErrorStatus AT45_Write(AT45_HandleTypeDef *AT45_Handle, const uint8_t *buf, uint
                       AT45_TX_TIMEOUT);
 
     /* AT45 SRAM buffer filling by user data */
-    /* Pure data */
+    /* Data send */
     AT45_SPI_Transmit(AT45_Handle->hspix, (uint8_t *) buf, dataLength, AT45_TX_TIMEOUT);
-    /* Checksum */
+
+    /* Checksum send */
     if (trailingCRC)
-    {
-        CRC16 = ModBus_CRC(buf, dataLength);
         AT45_SPI_Transmit(AT45_Handle->hspix, (uint8_t *) &CRC16, sizeof(CRC16), AT45_TX_TIMEOUT);
-    }
     CS_HIGH(AT45_Handle);
 
     /* Page program */
     /* Command */
-    CS_LOW(AT45_Handle);
     if (pageErase)
         AT45_Handle->CMD[0] = AT45_CMD_BUFFER_1_TO_MAIN_MEMORY_PAGE_PROGRAM_ERASE;
     else
         AT45_Handle->CMD[0] = AT45_CMD_BUFFER_1_TO_MAIN_MEMORY_PAGE_PROGRAM;
+    CS_LOW(AT45_Handle);
     AT45_SPI_Transmit(AT45_Handle->hspix, AT45_Handle->CMD, sizeof(AT45_Handle->CMD[0]), AT45_TX_TIMEOUT);
 
     /* A20-A9 - 12 page address bits that specify the page in the main memory to be written */
@@ -157,16 +159,16 @@ ErrorStatus AT45_Read(AT45_HandleTypeDef *AT45_Handle, uint8_t *buf, uint16_t da
         return AT45_Handle->status; // The boundaries of read operation beyond memory
 
     if (AT45_WaitWithTimeout(AT45_Handle, AT45_RESPONSE_TIMEOUT) != SUCCESS)
-        return AT45_Handle->status;
+        return AT45_Handle->status; // Timeout error
 
-    /* Middle buffer operations */
-    uint8_t *midBuf = malloc(sizeof(*midBuf) * frameLength);
-    if (midBuf == NULL)
+    /* Frame buffer operations */
+    uint8_t *frameBuf = malloc(sizeof(*frameBuf) * frameLength);
+    if (frameBuf == NULL)
         return AT45_Handle->status; // Insufficient heap memory available
 
     /* Command */
-    CS_LOW(AT45_Handle);
     AT45_Handle->CMD[0] = AT45_CMD_MAIN_MEMORY_PAGE_READ;
+    CS_LOW(AT45_Handle);
     AT45_SPI_Transmit(AT45_Handle->hspix, AT45_Handle->CMD, sizeof(AT45_Handle->CMD[0]), AT45_TX_TIMEOUT);
 
     /* A20-A9 - 12 page address bits that specify the page in the main memory to be read */
@@ -175,30 +177,30 @@ ErrorStatus AT45_Read(AT45_HandleTypeDef *AT45_Handle, uint8_t *buf, uint16_t da
                       AT45_TX_TIMEOUT);
 
     /* 4 dummy bytes */
-    AT45_Handle->CMD[0] = NULL;
+    AT45_Handle->CMD[0] = 0;
     AT45_SPI_Transmit(AT45_Handle->hspix, AT45_Handle->CMD, sizeof(AT45_Handle->CMD[0]), AT45_TX_TIMEOUT);
     AT45_SPI_Transmit(AT45_Handle->hspix, AT45_Handle->CMD, sizeof(AT45_Handle->CMD[0]), AT45_TX_TIMEOUT);
     AT45_SPI_Transmit(AT45_Handle->hspix, AT45_Handle->CMD, sizeof(AT45_Handle->CMD[0]), AT45_TX_TIMEOUT);
     AT45_SPI_Transmit(AT45_Handle->hspix, AT45_Handle->CMD, sizeof(AT45_Handle->CMD[0]), AT45_TX_TIMEOUT);
 
     /* Data read */
-    AT45_SPI_Receive(AT45_Handle->hspix, midBuf, frameLength, AT45_RX_TIMEOUT);
+    AT45_SPI_Receive(AT45_Handle->hspix, frameBuf, frameLength, AT45_RX_TIMEOUT);
     CS_HIGH(AT45_Handle);
 
     /* Checksum compare */
     if (trailingCRC)
     {
-        CRC16 = ModBus_CRC(midBuf, dataLength);
-        if (memcmp(&midBuf[dataLength], &CRC16, sizeof(CRC16)) != 0)
+        CRC16 = ModBus_CRC(frameBuf, dataLength);
+        if (memcmp(&frameBuf[dataLength], &CRC16, sizeof(CRC16)) != 0)
         {
-            free(midBuf);
+            free(frameBuf);
             return AT45_Handle->status; // CRC error
         }
     }
 
     /* Copy middle buffer content to the destination buffer */
-    memcpy(buf, midBuf, dataLength);
-    free(midBuf);
+    memcpy(buf, frameBuf, dataLength);
+    free(frameBuf);
 
     return AT45_Handle->status = SUCCESS;
 }
@@ -220,8 +222,8 @@ ErrorStatus AT45_Erase(AT45_HandleTypeDef *AT45_Handle, eraseInstruction_t erase
             return AT45_Handle->status; // The boundaries of erase operation beyond memory
 
         /* Command */
-        CS_LOW(AT45_Handle);
         AT45_Handle->CMD[0] = AT45_CMD_PAGE_ERASE;
+        CS_LOW(AT45_Handle);
         AT45_SPI_Transmit(AT45_Handle->hspix, AT45_Handle->CMD, sizeof(AT45_Handle->CMD[0]), AT45_TX_TIMEOUT);
 
         /* A20-A9 - 12 page address bits that specify the page in the main memory to be erased */
@@ -247,8 +249,8 @@ ErrorStatus AT45_Erase(AT45_HandleTypeDef *AT45_Handle, eraseInstruction_t erase
             return AT45_Handle->status; // The boundaries of erase operation beyond memory
 
         /* Command */
-        CS_LOW(AT45_Handle);
         AT45_Handle->CMD[0] = AT45_CMD_BLOCK_ERASE;
+        CS_LOW(AT45_Handle);
         AT45_SPI_Transmit(AT45_Handle->hspix, AT45_Handle->CMD, sizeof(AT45_Handle->CMD[0]), AT45_TX_TIMEOUT);
 
         /* A20-A12 - 9 block address bits that specify the block in the main memory to be erased */
@@ -274,8 +276,8 @@ ErrorStatus AT45_Erase(AT45_HandleTypeDef *AT45_Handle, eraseInstruction_t erase
             return AT45_Handle->status; // The boundaries of erase operation beyond memory
 
         /* Command */
-        CS_LOW(AT45_Handle);
         AT45_Handle->CMD[0] = AT45_CMD_SECTOR_ERASE;
+        CS_LOW(AT45_Handle);
         AT45_SPI_Transmit(AT45_Handle->hspix, AT45_Handle->CMD, sizeof(AT45_Handle->CMD[0]), AT45_TX_TIMEOUT);
 
         /* A20-A12 - 9 sector address bits that specify the sector in the main memory to be erased */
@@ -299,11 +301,11 @@ ErrorStatus AT45_Erase(AT45_HandleTypeDef *AT45_Handle, eraseInstruction_t erase
             return AT45_Handle->status;
 
         /* Command */
-        CS_LOW(AT45_Handle);
         AT45_Handle->CMD[0] = AT45_CMD_CHIP_ERASE_0;
         AT45_Handle->CMD[1] = AT45_CMD_CHIP_ERASE_1;
         AT45_Handle->CMD[2] = AT45_CMD_CHIP_ERASE_2;
         AT45_Handle->CMD[3] = AT45_CMD_CHIP_ERASE_3;
+        CS_LOW(AT45_Handle);
         AT45_SPI_Transmit(AT45_Handle->hspix, AT45_Handle->CMD, sizeof(AT45_Handle->CMD), AT45_TX_TIMEOUT);
         CS_HIGH(AT45_Handle);
 
@@ -327,7 +329,7 @@ bool AT45_Busy(AT45_HandleTypeDef *AT45_Handle)
 {
     AT45_ReadStatus(AT45_Handle);
 
-    return !READ_BIT(AT45_Handle->statusRegister[0], 1 << 7);
+    return !READ_BIT(AT45_Handle->statusRegister[0], 1u << 7);
 }
 
 /**
@@ -340,8 +342,8 @@ static ErrorStatus AT45_ReadID(AT45_HandleTypeDef *AT45_Handle)
     if (AT45_WaitWithTimeout(AT45_Handle, AT45_RESPONSE_TIMEOUT) != SUCCESS)
         return AT45_Handle->status;
 
-    CS_LOW(AT45_Handle);
     AT45_Handle->CMD[0] = AT45_CMD_MANUFACTURER_DEVICE_ID_READ;
+    CS_LOW(AT45_Handle);
     AT45_SPI_Transmit(AT45_Handle->hspix, AT45_Handle->CMD, sizeof(AT45_Handle->CMD[0]), AT45_TX_TIMEOUT);
     AT45_SPI_Receive(AT45_Handle->hspix, AT45_Handle->ID, sizeof(AT45_Handle->ID), AT45_RX_TIMEOUT);
     CS_HIGH(AT45_Handle);
@@ -351,31 +353,33 @@ static ErrorStatus AT45_ReadID(AT45_HandleTypeDef *AT45_Handle)
 
 static void AT45_ReadStatus(AT45_HandleTypeDef *AT45_Handle)
 {
-    CS_LOW(AT45_Handle);
     AT45_Handle->CMD[0] = AT45_CMD_STATUS_REGISTER_READ;
+    CS_LOW(AT45_Handle);
     AT45_SPI_Transmit(AT45_Handle->hspix, AT45_Handle->CMD, sizeof(AT45_Handle->CMD[0]), AT45_TX_TIMEOUT);
     AT45_SPI_Receive(AT45_Handle->hspix, AT45_Handle->statusRegister, sizeof(AT45_Handle->statusRegister),
                      AT45_RX_TIMEOUT);
-
     CS_HIGH(AT45_Handle);
 }
 
 static ErrorStatus AT45_WaitWithTimeout(AT45_HandleTypeDef *AT45_Handle, uint32_t timeout)
 {
+    AT45_Handle->status = ERROR;
     uint32_t tickStart = uwTick;
 
     while ((uwTick - tickStart) < timeout)
     {
         if (!AT45_Busy(AT45_Handle))
-            return SUCCESS;
+            return AT45_Handle->status = SUCCESS;
     }
-    return ERROR;
+    return AT45_Handle->status;
 }
 
 static ErrorStatus AT45_ConfigurePageSize(AT45_HandleTypeDef *AT45_Handle, uint16_t pageSize)
 {
+    AT45_Handle->status = ERROR;
+
     if (AT45_WaitWithTimeout(AT45_Handle, AT45_RESPONSE_TIMEOUT) != SUCCESS)
-        return ERROR;
+        return AT45_Handle->status;
 
     if (pageSize == 512)
     {
@@ -392,7 +396,7 @@ static ErrorStatus AT45_ConfigurePageSize(AT45_HandleTypeDef *AT45_Handle, uint1
         AT45_Handle->CMD[3] = AT45_CMD_CONFIGURE_STANDART_PAGE_SIZE_3;
     }
     else
-        return ERROR; // Incorrect page size
+        return AT45_Handle->status; // Incorrect page size
 
     /* Page size configuration */
     CS_LOW(AT45_Handle);
@@ -401,19 +405,29 @@ static ErrorStatus AT45_ConfigurePageSize(AT45_HandleTypeDef *AT45_Handle, uint1
 
     /* Wait for end of programming of the nonvolatile register */
     if (AT45_WaitWithTimeout(AT45_Handle, AT45_PAGE_PROGRAMMING_TIME) != SUCCESS)
-        return ERROR;
-    /* Check again the page size */
-    AT45_ReadStatus(AT45_Handle);
-    if (!READ_BIT(AT45_Handle->statusRegister[0], 1 << 0))
-        return ERROR;
+        return AT45_Handle->status;
 
-    return SUCCESS;
+    /* Check the new page size */
+    AT45_ReadStatus(AT45_Handle);
+    if (pageSize == 512)
+    {
+        if (!READ_BIT(AT45_Handle->statusRegister[0], 1u << 0))
+            return AT45_Handle->status = ERROR;
+    }
+    else if (pageSize == 528)
+    {
+        if (READ_BIT(AT45_Handle->statusRegister[0], 1u << 0))
+            return AT45_Handle->status = ERROR;
+    }
+
+    return AT45_Handle->status = SUCCESS;
 }
 
 static uint16_t ModBus_CRC(const uint8_t *pBuffer, uint16_t bufSize)
 {
     uint16_t CRC16 = 0xffff;
     uint16_t i, j;
+
     for (i = 0; i < bufSize; i++)
     {
         CRC16 ^= pBuffer[i];
@@ -425,5 +439,6 @@ static uint16_t ModBus_CRC(const uint8_t *pBuffer, uint16_t bufSize)
                 CRC16 = (CRC16 >> 1);
         }
     }
+
     return CRC16;
 }

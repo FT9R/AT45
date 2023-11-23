@@ -49,7 +49,7 @@
 
 /* USER CODE BEGIN PV */
 AT45_HandleTypeDef AT45_Handle;
-const uint8_t bufferWrite[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'};
+const uint8_t bufferWrite[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 'A', 'B', 'C'};
 uint8_t bufferRead[sizeof(bufferWrite)] = {0};
 /* USER CODE END PV */
 
@@ -100,7 +100,7 @@ int main(void)
         // AT45_Erase(&AT45_Handle, AT45_CHIP_ERASE, NULL, AT45_WAIT_BUSY);
         printf("\r\n First approach to read \r\n");
         AT45_Read(&AT45_Handle, bufferRead, sizeof(bufferRead), PAGE_ADDRESS, true);
-        if (strncmp((const char *) bufferRead, (const char *) bufferWrite, sizeof(bufferRead)) == 0)
+        if (memcmp(bufferRead, bufferWrite, sizeof(bufferRead)) == 0)
         {
             printf("Data already exist at page %i boundaries \r\n", PAGE);
         }
@@ -111,7 +111,7 @@ int main(void)
             AT45_Write(&AT45_Handle, bufferWrite, sizeof(bufferWrite), PAGE_ADDRESS, true, true, AT45_WAIT_BUSY);
             printf("\r\n Second approach to read \r\n");
             AT45_Read(&AT45_Handle, bufferRead, sizeof(bufferRead), PAGE_ADDRESS, true);
-            if (strncmp((const char *) bufferRead, (const char *) bufferWrite, sizeof(bufferRead)) == 0)
+            if (memcmp(bufferRead, bufferWrite, sizeof(bufferRead)) == 0)
             {
                 printf("Writing process success \r\n");
             }
