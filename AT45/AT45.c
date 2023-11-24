@@ -50,7 +50,7 @@ AT45_Status_t AT45_Init(AT45_HandleTypeDef *AT45_Handle, SPI_HandleTypeDef *hspi
         break;
 
     default:
-        return AT45_Handle->status = AT45_STATUS_ERROR_INITIALIZATION; // Unsupported device
+        return AT45_Handle->status = AT45_STATUS_ERROR_INITIALIZATION;
     }
 
     /* Force page size to binary */
@@ -80,10 +80,9 @@ AT45_Status_t AT45_Write(AT45_HandleTypeDef *AT45_Handle, const uint8_t *buf, ui
     if (frameLength > AT45_PAGE_SIZE)
         return AT45_Handle->status = AT45_STATUS_ERROR_ARGUMENT;
     if ((address % AT45_PAGE_SIZE) != 0)
-        return AT45_Handle->status =
-                   AT45_STATUS_ERROR_ARGUMENT; // Only first byte of the page can be pointed as the start byte
+        return AT45_Handle->status = AT45_STATUS_ERROR_ARGUMENT;
     if (address > (AT45_PAGE_SIZE * (AT45_Handle->numberOfPages - 1)))
-        return AT45_Handle->status = AT45_STATUS_ERROR_ARGUMENT; // The boundaries of write operation beyond memory
+        return AT45_Handle->status = AT45_STATUS_ERROR_ARGUMENT;
 
     /* Checksum calculate */
     if (trailingCRC)
@@ -168,18 +167,17 @@ AT45_Status_t AT45_Read(AT45_HandleTypeDef *AT45_Handle, uint8_t *buf, uint16_t 
     if (frameLength > AT45_PAGE_SIZE)
         return AT45_Handle->status = AT45_STATUS_ERROR_ARGUMENT;
     if ((address % AT45_PAGE_SIZE) != 0)
-        return AT45_Handle->status =
-                   AT45_STATUS_ERROR_ARGUMENT; // Only first byte of the page can be pointed as the start byte
+        return AT45_Handle->status = AT45_STATUS_ERROR_ARGUMENT;
     if (address > (AT45_PAGE_SIZE * (AT45_Handle->numberOfPages - 1)))
-        return AT45_Handle->status = AT45_STATUS_ERROR_ARGUMENT; // The boundaries of read operation beyond memory
+        return AT45_Handle->status = AT45_STATUS_ERROR_ARGUMENT;
 
     if (AT45_WaitWithTimeout(AT45_Handle, AT45_RESPONSE_TIMEOUT) != SUCCESS)
-        return AT45_Handle->status = AT45_STATUS_ERROR_TIMEOUT; // Timeout error
+        return AT45_Handle->status = AT45_STATUS_ERROR_TIMEOUT;
 
     /* Frame buffer memory allocation */
     uint8_t *frameBuf = malloc(sizeof(*frameBuf) * frameLength);
     if (frameBuf == NULL)
-        return AT45_Handle->status = AT45_STATUS_ERROR_MEM_MANAGE; // Insufficient heap memory available
+        return AT45_Handle->status = AT45_STATUS_ERROR_MEM_MANAGE;
 
     /* Command */
     AT45_Handle->CMD[0] = AT45_CMD_MAIN_MEMORY_PAGE_READ;
@@ -198,7 +196,7 @@ AT45_Status_t AT45_Read(AT45_HandleTypeDef *AT45_Handle, uint8_t *buf, uint16_t 
     AT45_SPI_Transmit(AT45_Handle->hspix, AT45_Handle->CMD, sizeof(AT45_Handle->CMD[0]), AT45_TX_TIMEOUT);
     AT45_SPI_Transmit(AT45_Handle->hspix, AT45_Handle->CMD, sizeof(AT45_Handle->CMD[0]), AT45_TX_TIMEOUT);
 
-    /* Data read */
+    /* Data receive */
     AT45_SPI_Receive(AT45_Handle->hspix, frameBuf, frameLength, AT45_RX_TIMEOUT);
     CS_HIGH(AT45_Handle);
 
@@ -213,7 +211,7 @@ AT45_Status_t AT45_Read(AT45_HandleTypeDef *AT45_Handle, uint8_t *buf, uint16_t 
         }
     }
 
-    /* Copy middle buffer content to the destination buffer */
+    /* Copy received data without checksum to the destination buffer */
     memcpy(buf, frameBuf, dataLength);
     free(frameBuf);
 
@@ -232,9 +230,9 @@ AT45_Status_t AT45_Erase(AT45_HandleTypeDef *AT45_Handle, AT45_EraseInstruction_
     {
     case AT45_PAGE_ERASE:
         if ((address % AT45_PAGE_SIZE) != 0)
-            return AT45_Handle->status = AT45_STATUS_ERROR_ARGUMENT; // Incorrect start address for page
+            return AT45_Handle->status = AT45_STATUS_ERROR_ARGUMENT;
         if (address > ((AT45_PAGE_SIZE * AT45_Handle->numberOfPages) - AT45_PAGE_SIZE))
-            return AT45_Handle->status = AT45_STATUS_ERROR_ARGUMENT; // The boundaries of erase operation beyond memory
+            return AT45_Handle->status = AT45_STATUS_ERROR_ARGUMENT;
 
         /* Command */
         AT45_Handle->CMD[0] = AT45_CMD_PAGE_ERASE;
@@ -259,9 +257,9 @@ AT45_Status_t AT45_Erase(AT45_HandleTypeDef *AT45_Handle, AT45_EraseInstruction_
 
     case AT45_BLOCK_ERASE:
         if ((address % AT45_BLOCK_SIZE) != 0)
-            return AT45_Handle->status = AT45_STATUS_ERROR_ARGUMENT; // Incorrect start address for block
+            return AT45_Handle->status = AT45_STATUS_ERROR_ARGUMENT;
         if (address > ((AT45_PAGE_SIZE * AT45_Handle->numberOfPages) - AT45_BLOCK_SIZE))
-            return AT45_Handle->status = AT45_STATUS_ERROR_ARGUMENT; // The boundaries of erase operation beyond memory
+            return AT45_Handle->status = AT45_STATUS_ERROR_ARGUMENT;
 
         /* Command */
         AT45_Handle->CMD[0] = AT45_CMD_BLOCK_ERASE;
@@ -286,9 +284,9 @@ AT45_Status_t AT45_Erase(AT45_HandleTypeDef *AT45_Handle, AT45_EraseInstruction_
 
     case AT45_SECTOR_ERASE:
         if ((address % AT45_SECTOR_SIZE) != 0)
-            return AT45_Handle->status = AT45_STATUS_ERROR_ARGUMENT; // Incorrect start address for sector
+            return AT45_Handle->status = AT45_STATUS_ERROR_ARGUMENT;
         if (address > ((AT45_PAGE_SIZE * AT45_Handle->numberOfPages) - AT45_SECTOR_SIZE))
-            return AT45_Handle->status = AT45_STATUS_ERROR_ARGUMENT; // The boundaries of erase operation beyond memory
+            return AT45_Handle->status = AT45_STATUS_ERROR_ARGUMENT;
 
         /* Command */
         AT45_Handle->CMD[0] = AT45_CMD_SECTOR_ERASE;
@@ -419,7 +417,7 @@ static ErrorStatus AT45_PageSizeConfig(AT45_HandleTypeDef *AT45_Handle, uint16_t
         AT45_Handle->CMD[3] = AT45_CMD_CONFIGURE_STANDART_PAGE_SIZE_3;
     }
     else
-        return ERROR; // Incorrect page size
+        return ERROR;
 
     /* Page size configuration */
     CS_LOW(AT45_Handle);
