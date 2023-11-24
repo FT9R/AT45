@@ -95,7 +95,7 @@ int main(void)
     MX_SPI3_Init();
     /* USER CODE BEGIN 2 */
     AT45_Init(&AT45_Handle, &hspi3, CS0_GPIO_Port, CS0_Pin);
-    if (AT45_Handle.status == SUCCESS)
+    if (AT45_Handle.status == AT45_STATUS_READY)
     {
         // AT45_Erase(&AT45_Handle, AT45_CHIP_ERASE, NULL, AT45_WAIT_BUSY);
         printf("\r\n First approach to read \r\n");
@@ -108,7 +108,7 @@ int main(void)
         {
             printf("Data doesn't exist at page %i boundaries \r\n", PAGE);
             printf("Page programming...");
-            AT45_Write(&AT45_Handle, bufferWrite, sizeof(bufferWrite), PAGE_ADDRESS, true, true, AT45_WAIT_BUSY);
+            AT45_Write(&AT45_Handle, bufferWrite, sizeof(bufferWrite), PAGE_ADDRESS, true, false, AT45_WAIT_BUSY);
             printf("\r\n Second approach to read \r\n");
             AT45_Read(&AT45_Handle, bufferRead, sizeof(bufferRead), PAGE_ADDRESS, true);
             if (memcmp(bufferRead, bufferWrite, sizeof(bufferRead)) == 0)

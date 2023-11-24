@@ -2,7 +2,7 @@
 
 /* Private variables */
 static AT45_HandleTypeDef AT45_Handle;
-static const uint8_t bufferWrite[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'};
+static const uint8_t bufferWrite[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 'A', 'B', 'C'};
 static uint8_t bufferRead[sizeof(bufferWrite)] = {0};
 
 void main(void)
@@ -11,7 +11,7 @@ void main(void)
     IO_Init();
     SPIx_Init(&hspi3, SPI_Mode_Master, SPI_BaudRatePrescaler_256);
     AT45_Init(&AT45_Handle, &hspi3, CS0_GPIO_Port, CS0_Pin);
-    if (AT45_Handle.status == SUCCESS)
+    if (AT45_Handle.status == AT45_STATUS_READY)
     {
         // AT45_Erase(&AT45_Handle, AT45_CHIP_ERASE, NULL, AT45_WAIT_BUSY);
         printf("\r\n First approach to read \r\n");
