@@ -68,7 +68,7 @@ AT45_Status_t AT45_Init(AT45_HandleTypeDef *AT45_Handle, SPI_HandleTypeDef *hspi
 AT45_Status_t AT45_Write(AT45_HandleTypeDef *AT45_Handle, const uint8_t *buf, uint16_t dataLength, uint32_t address,
                          bool trailingCRC, bool pageErase, AT45_WaitForTask_t waitForTask)
 {
-    AT45_Handle->status = AT45_STATUS_BUSY;
+    AT45_Handle->status = AT45_STATUS_BUSY_WRITE;
     uint16_t frameLength = dataLength;
     uint16_t CRC16 = 0x0000;
 
@@ -156,7 +156,7 @@ AT45_Status_t AT45_Write(AT45_HandleTypeDef *AT45_Handle, const uint8_t *buf, ui
 AT45_Status_t AT45_Read(AT45_HandleTypeDef *AT45_Handle, uint8_t *buf, uint16_t dataLength, uint32_t address,
                         bool trailingCRC)
 {
-    AT45_Handle->status = AT45_STATUS_BUSY;
+    AT45_Handle->status = AT45_STATUS_BUSY_READ;
     uint16_t frameLength = dataLength;
     uint16_t CRC16 = 0x0000;
 
@@ -223,7 +223,7 @@ AT45_Status_t AT45_Read(AT45_HandleTypeDef *AT45_Handle, uint8_t *buf, uint16_t 
 AT45_Status_t AT45_Erase(AT45_HandleTypeDef *AT45_Handle, AT45_EraseInstruction_t eraseInstruction, uint32_t address,
                          AT45_WaitForTask_t waitForTask)
 {
-    AT45_Handle->status = AT45_STATUS_BUSY;
+    AT45_Handle->status = AT45_STATUS_BUSY_ERASE;
 
     if (AT45_WaitWithTimeout(AT45_Handle, AT45_RESPONSE_TIMEOUT) != SUCCESS)
         return AT45_Handle->status = AT45_STATUS_ERROR_TIMEOUT;
