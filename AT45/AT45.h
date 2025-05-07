@@ -46,12 +46,12 @@
 #define AT45_RESPONSE_TIMEOUT 100
 
 /* Device constants */
-#define AT45_MANUFACTURER_ID 0x1F
-#define AT45_PAGE_SIZE       512
+#define AT45_MANUFACTURER_ID    0x1F
 #define AT45_BLOCK_SIZE      ((AT45_PAGE_SIZE) * 8)
 #define AT45_SECTOR_SIZE     ((AT45_PAGE_SIZE) * 256)
 
 enum AT45_DeviceID_e { AT45DB021 = 0x23, AT45DB041, AT45DB081, AT45DB161, AT45DB321, AT45DB641 };
+enum AT45_PageSizeOptions_e {AT45_PAGE_SIZE_BINARY , AT45_PAGE_SIZE_ACTUAL };
 
 /* Macro */
 #define KB_TO_BYTE(KB)         ((KB) * 1024)
@@ -96,6 +96,7 @@ typedef struct AT45_HandleTypeDef_s
     uint8_t addressBytes[3];
     uint8_t CMD[4];
     uint32_t numberOfPages;
+    uint32_t pageSize;
     AT45_Status_t status;
 } AT45_HandleTypeDef;
 
@@ -154,5 +155,19 @@ AT45_Status_t AT45_Erase(AT45_HandleTypeDef *AT45_Handle, AT45_EraseInstruction_
  * @return True - device is busy
  */
 bool AT45_Busy(AT45_HandleTypeDef *AT45_Handle);
+
+/**
+ * @brief Check whether the Chip is set to use binary (power of 2) page size or actual page size (slightly bigger)
+ * @param AT45_Handle: pointer to the device handle structure
+ * @return the currenly set page size type AT45_PAGE_SIZE_BINARY or AT45_PAGE_SIZE_ACTUAL
+ */
+enum AT45_PageSizeOptions_e AT45_PageSizeCheck(AT45_HandleTypeDef *AT45_Handle);
+/**
+ * @brief set the chip to use AT45_PAGE_SIZE_BINARY or AT45_PAGE_SIZE_ACTUAL
+ * @param AT45_Handle: pointer to the device handle structure
+ * @param targetPageSize: the page size option to use
+ * @return SUCCESS or ERROR
+ */
+ErrorStatus AT45_PageSizeConfig(AT45_HandleTypeDef *AT45_Handle, enum AT45_PageSizeOptions_e targetPageSize)
 
 #endif

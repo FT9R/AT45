@@ -1,5 +1,4 @@
 #include "AT45.h"
-
 /* Private function prototypes */
 static void AT45_ReadID(AT45_HandleTypeDef *AT45_Handle);
 static void AT45_ReadStatus(AT45_HandleTypeDef *AT45_Handle);
@@ -8,8 +7,37 @@ static uint16_t AT45_PageSizeCheck(AT45_HandleTypeDef *AT45_Handle);
 static ErrorStatus AT45_PageSizeConfig(AT45_HandleTypeDef *AT45_Handle, uint16_t targetPageSize);
 static uint16_t ModBus_CRC(const uint8_t *pBuffer, uint16_t bufSize);
 
-AT45_Status_t AT45_Init(AT45_HandleTypeDef *AT45_Handle, SPI_HandleTypeDef *hspix, GPIO_TypeDef *CS_Port,
-                        uint16_t CS_Pin)
+static const uint32_t pageSizePow2[] = {
+    256,
+    256,
+    256,
+    512,
+    512,
+    256
+};
+static const uint32_t pageSizeActual[] = {
+    264,
+    264,
+    264,
+    528,
+    528,
+    264
+};
+static const uint32_t numPages[] = {
+    1024,
+    2048,
+    4096,
+    4096,
+    8192,
+    32768
+};
+
+AT45_Status_t AT45_Init(
+    AT45_HandleTypeDef *AT45_Handle, 
+    SPI_HandleTypeDef *hspix, 
+    GPIO_TypeDef *CS_Port,
+    uint16_t CS_Pin,
+)
 {
     /* Argument guards */
     if (AT45_Handle == NULL)
@@ -43,21 +71,18 @@ AT45_Status_t AT45_Init(AT45_HandleTypeDef *AT45_Handle, SPI_HandleTypeDef *hspi
         return AT45_Handle->status = AT45_STATUS_ERROR_INITIALIZATION;
 
     /* Determine number of pages */
-    switch (AT45_Handle->ID[1])
-    {
-    case AT45DB161:
-        AT45_Handle->numberOfPages = 16 * (KB_TO_BYTE(1) * KB_TO_BYTE(1) / AT45_PAGE_SIZE / 8);
-        break;
-
-    default:
+    if (AT45_Handle->ID[1] < AT45DB021 || AT45_Handle->ID[1] > AT45DB641)
         return AT45_Handle->status = AT45_STATUS_ERROR_INITIALIZATION;
-    }
 
-    /* Force page size to binary */
-    if (AT45_PageSizeCheck(AT45_Handle) != AT45_PAGE_SIZE)
+    AT45_Handle->numberOfPages = numPages[ AT45_Handle->ID[1] - AT45DB021 ];
+
+    if (AT45_PageSizeCheck(AT45_Handle) == AT45_PAGE_SIZE_BINARY)
     {
-        if (AT45_PageSizeConfig(AT45_Handle, AT45_PAGE_SIZE) != SUCCESS)
-            return AT45_Handle->status = AT45_STATUS_ERROR_INITIALIZATION;
+        AT45_Handle->pageSize = pageSizePow2[AT45_Handle->ID[1] - AT45DB021];
+    }
+    else
+    {
+        AT45_Handle->pageSize = pageSizeActual[AT45_Handle->ID[1] - AT45DB021];
     }
 
     AT45_Delay(10);
@@ -77,11 +102,11 @@ AT45_Status_t AT45_Write(AT45_HandleTypeDef *AT45_Handle, const uint8_t *buf, ui
         return AT45_Handle->status = AT45_STATUS_ERROR_ARGUMENT;
     if (trailingCRC)
         frameLength += sizeof(CRC16);
-    if (frameLength > AT45_PAGE_SIZE)
+    if (frameLength > AT45_Handle->pageSize)
         return AT45_Handle->status = AT45_STATUS_ERROR_ARGUMENT;
-    if ((address % AT45_PAGE_SIZE) != 0)
+    if ((address % AT45_Handle->pageSize) != 0)
         return AT45_Handle->status = AT45_STATUS_ERROR_ARGUMENT;
-    if (address > (AT45_PAGE_SIZE * (AT45_Handle->numberOfPages - 1)))
+    if (address > (AT45_Handle->pageSize * (AT45_Handle->numberOfPages - 1)))
         return AT45_Handle->status = AT45_STATUS_ERROR_ARGUMENT;
 
     /* Checksum calculate */
@@ -164,11 +189,11 @@ AT45_Status_t AT45_Read(AT45_HandleTypeDef *AT45_Handle, uint8_t *buf, uint16_t 
         return AT45_Handle->status = AT45_STATUS_ERROR_ARGUMENT;
     if (trailingCRC)
         frameLength += sizeof(CRC16);
-    if (frameLength > AT45_PAGE_SIZE)
+    if (frameLength > AT45_Handle->pageSize)
         return AT45_Handle->status = AT45_STATUS_ERROR_ARGUMENT;
-    if ((address % AT45_PAGE_SIZE) != 0)
+    if ((address % AT45_Handle->pageSize) != 0)
         return AT45_Handle->status = AT45_STATUS_ERROR_ARGUMENT;
-    if (address > (AT45_PAGE_SIZE * (AT45_Handle->numberOfPages - 1)))
+    if (address > (AT45_Handle->pageSize * (AT45_Handle->numberOfPages - 1)))
         return AT45_Handle->status = AT45_STATUS_ERROR_ARGUMENT;
 
     if (AT45_WaitWithTimeout(AT45_Handle, AT45_RESPONSE_TIMEOUT) != SUCCESS)
@@ -229,9 +254,9 @@ AT45_Status_t AT45_Erase(AT45_HandleTypeDef *AT45_Handle, AT45_EraseInstruction_
     switch (eraseInstruction)
     {
     case AT45_PAGE_ERASE:
-        if ((address % AT45_PAGE_SIZE) != 0)
+        if ((address % AT45_Handle->pageSize) != 0)
             return AT45_Handle->status = AT45_STATUS_ERROR_ARGUMENT;
-        if (address > ((AT45_PAGE_SIZE * AT45_Handle->numberOfPages) - AT45_PAGE_SIZE))
+        if (address > ((AT45_Handle->pageSize * AT45_Handle->numberOfPages) - AT45_Handle->pageSize))
             return AT45_Handle->status = AT45_STATUS_ERROR_ARGUMENT;
 
         /* Command */
@@ -258,7 +283,7 @@ AT45_Status_t AT45_Erase(AT45_HandleTypeDef *AT45_Handle, AT45_EraseInstruction_
     case AT45_BLOCK_ERASE:
         if ((address % AT45_BLOCK_SIZE) != 0)
             return AT45_Handle->status = AT45_STATUS_ERROR_ARGUMENT;
-        if (address > ((AT45_PAGE_SIZE * AT45_Handle->numberOfPages) - AT45_BLOCK_SIZE))
+        if (address > ((AT45_Handle->pageSize * AT45_Handle->numberOfPages) - AT45_BLOCK_SIZE))
             return AT45_Handle->status = AT45_STATUS_ERROR_ARGUMENT;
 
         /* Command */
@@ -285,7 +310,7 @@ AT45_Status_t AT45_Erase(AT45_HandleTypeDef *AT45_Handle, AT45_EraseInstruction_
     case AT45_SECTOR_ERASE:
         if ((address % AT45_SECTOR_SIZE) != 0)
             return AT45_Handle->status = AT45_STATUS_ERROR_ARGUMENT;
-        if (address > ((AT45_PAGE_SIZE * AT45_Handle->numberOfPages) - AT45_SECTOR_SIZE))
+        if (address > ((AT45_Handle->pageSize * AT45_Handle->numberOfPages) - AT45_SECTOR_SIZE))
             return AT45_Handle->status = AT45_STATUS_ERROR_ARGUMENT;
 
         /* Command */
@@ -393,23 +418,23 @@ static ErrorStatus AT45_WaitWithTimeout(AT45_HandleTypeDef *AT45_Handle, uint32_
     return ERROR;
 }
 
-static uint16_t AT45_PageSizeCheck(AT45_HandleTypeDef *AT45_Handle)
+enum AT45_PageSizeOptions_e AT45_PageSizeCheck(AT45_HandleTypeDef *AT45_Handle)
 {
     AT45_ReadStatus(AT45_Handle);
 
-    return READ_BIT(AT45_Handle->statusRegister[0], 1u << 0) ? 512 : 528;
+    return READ_BIT(AT45_Handle->statusRegister[0], 1u << 0)? AT45_PAGE_SIZE_BINARY: AT45_PAGE_SIZE_ACTUAL;
 }
 
-static ErrorStatus AT45_PageSizeConfig(AT45_HandleTypeDef *AT45_Handle, uint16_t targetPageSize)
+ErrorStatus AT45_PageSizeConfig(AT45_HandleTypeDef *AT45_Handle, enum AT45_PageSizeOptions_e targetPageSize)
 {
-    if (targetPageSize == 512)
+    if (targetPageSize == AT45_PAGE_SIZE_BINARY)
     {
         AT45_Handle->CMD[0] = AT45_CMD_CONFIGURE_BINARY_PAGE_SIZE_0;
         AT45_Handle->CMD[1] = AT45_CMD_CONFIGURE_BINARY_PAGE_SIZE_1;
         AT45_Handle->CMD[2] = AT45_CMD_CONFIGURE_BINARY_PAGE_SIZE_2;
         AT45_Handle->CMD[3] = AT45_CMD_CONFIGURE_BINARY_PAGE_SIZE_3;
     }
-    else if (targetPageSize == 528)
+    else if (targetPageSize == AT45_PAGE_SIZE_ACTUAL)
     {
         AT45_Handle->CMD[0] = AT45_CMD_CONFIGURE_STANDART_PAGE_SIZE_0;
         AT45_Handle->CMD[1] = AT45_CMD_CONFIGURE_STANDART_PAGE_SIZE_1;
