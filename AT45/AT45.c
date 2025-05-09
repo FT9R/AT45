@@ -3,25 +3,24 @@
 static void AT45_ReadID(AT45_HandleTypeDef *AT45_Handle);
 static void AT45_ReadStatus(AT45_HandleTypeDef *AT45_Handle);
 static ErrorStatus AT45_WaitWithTimeout(AT45_HandleTypeDef *AT45_Handle, uint32_t timeout);
-static uint16_t AT45_PageSizeCheck(AT45_HandleTypeDef *AT45_Handle);
-static ErrorStatus AT45_PageSizeConfig(AT45_HandleTypeDef *AT45_Handle, uint16_t targetPageSize);
 static uint16_t ModBus_CRC(const uint8_t *pBuffer, uint16_t bufSize);
+static void address_bytes_swap(AT45_HandleTypeDef *AT45_Handle, uint32_t address);
 
 static const uint32_t pageSizePow2[] = {
-    256,
-    256,
-    256,
-    512,
-    512,
-    256
+    AT45DB021E_PAGE_SIZE_BINARY,
+    AT45DB041E_PAGE_SIZE_BINARY,
+    AT45DB081E_PAGE_SIZE_BINARY,
+    AT45DB161E_PAGE_SIZE_BINARY,
+    AT45DB321E_PAGE_SIZE_BINARY,
+    AT45DB641E_PAGE_SIZE_BINARY
 };
 static const uint32_t pageSizeActual[] = {
-    264,
-    264,
-    264,
-    528,
-    528,
-    264
+    AT45DB021E_PAGE_SIZE_STANDARD,
+    AT45DB041E_PAGE_SIZE_STANDARD,
+    AT45DB081E_PAGE_SIZE_STANDARD,
+    AT45DB161E_PAGE_SIZE_STANDARD,
+    AT45DB321E_PAGE_SIZE_STANDARD,
+    AT45DB641E_PAGE_SIZE_STANDARD
 };
 static const uint32_t numPages[] = {
     1024,
@@ -36,7 +35,7 @@ AT45_Status_t AT45_Init(
     AT45_HandleTypeDef *AT45_Handle, 
     SPI_HandleTypeDef *hspix, 
     GPIO_TypeDef *CS_Port,
-    uint16_t CS_Pin,
+    uint16_t CS_Pin
 )
 {
     /* Argument guards */
@@ -77,13 +76,9 @@ AT45_Status_t AT45_Init(
     AT45_Handle->numberOfPages = numPages[ AT45_Handle->ID[1] - AT45DB021 ];
 
     if (AT45_PageSizeCheck(AT45_Handle) == AT45_PAGE_SIZE_BINARY)
-    {
         AT45_Handle->pageSize = pageSizePow2[AT45_Handle->ID[1] - AT45DB021];
-    }
     else
-    {
         AT45_Handle->pageSize = pageSizeActual[AT45_Handle->ID[1] - AT45DB021];
-    }
 
     AT45_Delay(10);
 
@@ -122,9 +117,7 @@ AT45_Status_t AT45_Write(AT45_HandleTypeDef *AT45_Handle, const uint8_t *buf, ui
     CS_LOW(AT45_Handle);
     AT45_SPI_Transmit(AT45_Handle->hspix, AT45_Handle->CMD, sizeof(AT45_Handle->CMD[0]), AT45_TX_TIMEOUT);
 
-    /* BFA8-BFA0 - Address of the first byte in the SRAM buffer to be written */
-    /* Fixed zero position */
-    ADDRESS_BYTES_SWAP(AT45_Handle, 0);
+    address_bytes_swap(AT45_Handle, 0);
     AT45_SPI_Transmit(AT45_Handle->hspix, AT45_Handle->addressBytes, sizeof(AT45_Handle->addressBytes),
                       AT45_TX_TIMEOUT);
 
@@ -146,8 +139,7 @@ AT45_Status_t AT45_Write(AT45_HandleTypeDef *AT45_Handle, const uint8_t *buf, ui
     CS_LOW(AT45_Handle);
     AT45_SPI_Transmit(AT45_Handle->hspix, AT45_Handle->CMD, sizeof(AT45_Handle->CMD[0]), AT45_TX_TIMEOUT);
 
-    /* A20-A9 - 12 page address bits that specify the page in the main memory to be written */
-    ADDRESS_BYTES_SWAP(AT45_Handle, address);
+    address_bytes_swap(AT45_Handle, address);
     AT45_SPI_Transmit(AT45_Handle->hspix, AT45_Handle->addressBytes, sizeof(AT45_Handle->addressBytes),
                       AT45_TX_TIMEOUT);
     CS_HIGH(AT45_Handle);
@@ -209,8 +201,7 @@ AT45_Status_t AT45_Read(AT45_HandleTypeDef *AT45_Handle, uint8_t *buf, uint16_t 
     CS_LOW(AT45_Handle);
     AT45_SPI_Transmit(AT45_Handle->hspix, AT45_Handle->CMD, sizeof(AT45_Handle->CMD[0]), AT45_TX_TIMEOUT);
 
-    /* A20-A9 - 12 page address bits that specify the page in the main memory to be read */
-    ADDRESS_BYTES_SWAP(AT45_Handle, address);
+    address_bytes_swap(AT45_Handle, address);
     AT45_SPI_Transmit(AT45_Handle->hspix, AT45_Handle->addressBytes, sizeof(AT45_Handle->addressBytes),
                       AT45_TX_TIMEOUT);
 
@@ -264,8 +255,7 @@ AT45_Status_t AT45_Erase(AT45_HandleTypeDef *AT45_Handle, AT45_EraseInstruction_
         CS_LOW(AT45_Handle);
         AT45_SPI_Transmit(AT45_Handle->hspix, AT45_Handle->CMD, sizeof(AT45_Handle->CMD[0]), AT45_TX_TIMEOUT);
 
-        /* A20-A9 - 12 page address bits that specify the page in the main memory to be erased */
-        ADDRESS_BYTES_SWAP(AT45_Handle, address);
+        address_bytes_swap(AT45_Handle, address);
         AT45_SPI_Transmit(AT45_Handle->hspix, AT45_Handle->addressBytes, sizeof(AT45_Handle->addressBytes),
                           AT45_TX_TIMEOUT);
         CS_HIGH(AT45_Handle);
@@ -281,9 +271,9 @@ AT45_Status_t AT45_Erase(AT45_HandleTypeDef *AT45_Handle, AT45_EraseInstruction_
         break;
 
     case AT45_BLOCK_ERASE:
-        if ((address % AT45_BLOCK_SIZE) != 0)
+        if ((address % AT45_block_size(AT45_Handle)) != 0)
             return AT45_Handle->status = AT45_STATUS_ERROR_ARGUMENT;
-        if (address > ((AT45_Handle->pageSize * AT45_Handle->numberOfPages) - AT45_BLOCK_SIZE))
+        if (address > ((AT45_Handle->pageSize * AT45_Handle->numberOfPages) - AT45_block_size(AT45_Handle)))
             return AT45_Handle->status = AT45_STATUS_ERROR_ARGUMENT;
 
         /* Command */
@@ -291,8 +281,7 @@ AT45_Status_t AT45_Erase(AT45_HandleTypeDef *AT45_Handle, AT45_EraseInstruction_
         CS_LOW(AT45_Handle);
         AT45_SPI_Transmit(AT45_Handle->hspix, AT45_Handle->CMD, sizeof(AT45_Handle->CMD[0]), AT45_TX_TIMEOUT);
 
-        /* A20-A12 - 9 block address bits that specify the block in the main memory to be erased */
-        ADDRESS_BYTES_SWAP(AT45_Handle, address);
+        address_bytes_swap(AT45_Handle, address);
         AT45_SPI_Transmit(AT45_Handle->hspix, AT45_Handle->addressBytes, sizeof(AT45_Handle->addressBytes),
                           AT45_TX_TIMEOUT);
         CS_HIGH(AT45_Handle);
@@ -308,9 +297,9 @@ AT45_Status_t AT45_Erase(AT45_HandleTypeDef *AT45_Handle, AT45_EraseInstruction_
         break;
 
     case AT45_SECTOR_ERASE:
-        if ((address % AT45_SECTOR_SIZE) != 0)
+        if ((address % AT45_sector_size(AT45_Handle)) != 0)
             return AT45_Handle->status = AT45_STATUS_ERROR_ARGUMENT;
-        if (address > ((AT45_Handle->pageSize * AT45_Handle->numberOfPages) - AT45_SECTOR_SIZE))
+        if (address > ((AT45_Handle->pageSize * AT45_Handle->numberOfPages) - AT45_sector_size(AT45_Handle)))
             return AT45_Handle->status = AT45_STATUS_ERROR_ARGUMENT;
 
         /* Command */
@@ -318,8 +307,7 @@ AT45_Status_t AT45_Erase(AT45_HandleTypeDef *AT45_Handle, AT45_EraseInstruction_
         CS_LOW(AT45_Handle);
         AT45_SPI_Transmit(AT45_Handle->hspix, AT45_Handle->CMD, sizeof(AT45_Handle->CMD[0]), AT45_TX_TIMEOUT);
 
-        /* A20-A12 - 9 sector address bits that specify the sector in the main memory to be erased */
-        ADDRESS_BYTES_SWAP(AT45_Handle, address);
+        address_bytes_swap(AT45_Handle, address);
         AT45_SPI_Transmit(AT45_Handle->hspix, AT45_Handle->addressBytes, sizeof(AT45_Handle->addressBytes),
                           AT45_TX_TIMEOUT);
         CS_HIGH(AT45_Handle);
@@ -371,6 +359,53 @@ bool AT45_Busy(AT45_HandleTypeDef *AT45_Handle)
     return !READ_BIT(AT45_Handle->statusRegister[0], 1u << 7);
 }
 
+enum AT45_PageSizeOptions_e AT45_PageSizeCheck(AT45_HandleTypeDef *AT45_Handle)
+{
+    AT45_ReadStatus(AT45_Handle);
+
+    return READ_BIT(AT45_Handle->statusRegister[0], 1u << 0)? AT45_PAGE_SIZE_BINARY: AT45_PAGE_SIZE_ACTUAL;
+}
+
+ErrorStatus AT45_PageSizeConfig(AT45_HandleTypeDef *AT45_Handle, enum AT45_PageSizeOptions_e targetPageSize)
+{
+    if (targetPageSize == AT45_PAGE_SIZE_BINARY)
+    {
+        AT45_Handle->CMD[0] = AT45_CMD_CONFIGURE_BINARY_PAGE_SIZE_0;
+        AT45_Handle->CMD[1] = AT45_CMD_CONFIGURE_BINARY_PAGE_SIZE_1;
+        AT45_Handle->CMD[2] = AT45_CMD_CONFIGURE_BINARY_PAGE_SIZE_2;
+        AT45_Handle->CMD[3] = AT45_CMD_CONFIGURE_BINARY_PAGE_SIZE_3;
+    }
+    else if (targetPageSize == AT45_PAGE_SIZE_ACTUAL)
+    {
+        AT45_Handle->CMD[0] = AT45_CMD_CONFIGURE_STANDART_PAGE_SIZE_0;
+        AT45_Handle->CMD[1] = AT45_CMD_CONFIGURE_STANDART_PAGE_SIZE_1;
+        AT45_Handle->CMD[2] = AT45_CMD_CONFIGURE_STANDART_PAGE_SIZE_2;
+        AT45_Handle->CMD[3] = AT45_CMD_CONFIGURE_STANDART_PAGE_SIZE_3;
+    }
+    else
+        return ERROR;
+
+    /* Page size configuration */
+    CS_LOW(AT45_Handle);
+    AT45_SPI_Transmit(AT45_Handle->hspix, AT45_Handle->CMD, sizeof(AT45_Handle->CMD), AT45_TX_TIMEOUT);
+    CS_HIGH(AT45_Handle);
+
+    /* Wait for end of programming of the nonvolatile register */
+    if (AT45_WaitWithTimeout(AT45_Handle, AT45_PAGE_ERASE_PROGRAMMING_TIME) != SUCCESS)
+        return ERROR;
+
+    /* Check the new page size */
+    if (AT45_PageSizeCheck(AT45_Handle) != targetPageSize)
+        return ERROR;
+
+    if (targetPageSize == AT45_PAGE_SIZE_BINARY)
+        AT45_Handle->pageSize = pageSizePow2[AT45_Handle->ID[1] - AT45DB021];
+    else
+        AT45_Handle->pageSize = pageSizeActual[AT45_Handle->ID[1] - AT45DB021];
+
+    return SUCCESS;
+}
+
 /**
  * @section Private functions
  */
@@ -418,48 +453,6 @@ static ErrorStatus AT45_WaitWithTimeout(AT45_HandleTypeDef *AT45_Handle, uint32_
     return ERROR;
 }
 
-enum AT45_PageSizeOptions_e AT45_PageSizeCheck(AT45_HandleTypeDef *AT45_Handle)
-{
-    AT45_ReadStatus(AT45_Handle);
-
-    return READ_BIT(AT45_Handle->statusRegister[0], 1u << 0)? AT45_PAGE_SIZE_BINARY: AT45_PAGE_SIZE_ACTUAL;
-}
-
-ErrorStatus AT45_PageSizeConfig(AT45_HandleTypeDef *AT45_Handle, enum AT45_PageSizeOptions_e targetPageSize)
-{
-    if (targetPageSize == AT45_PAGE_SIZE_BINARY)
-    {
-        AT45_Handle->CMD[0] = AT45_CMD_CONFIGURE_BINARY_PAGE_SIZE_0;
-        AT45_Handle->CMD[1] = AT45_CMD_CONFIGURE_BINARY_PAGE_SIZE_1;
-        AT45_Handle->CMD[2] = AT45_CMD_CONFIGURE_BINARY_PAGE_SIZE_2;
-        AT45_Handle->CMD[3] = AT45_CMD_CONFIGURE_BINARY_PAGE_SIZE_3;
-    }
-    else if (targetPageSize == AT45_PAGE_SIZE_ACTUAL)
-    {
-        AT45_Handle->CMD[0] = AT45_CMD_CONFIGURE_STANDART_PAGE_SIZE_0;
-        AT45_Handle->CMD[1] = AT45_CMD_CONFIGURE_STANDART_PAGE_SIZE_1;
-        AT45_Handle->CMD[2] = AT45_CMD_CONFIGURE_STANDART_PAGE_SIZE_2;
-        AT45_Handle->CMD[3] = AT45_CMD_CONFIGURE_STANDART_PAGE_SIZE_3;
-    }
-    else
-        return ERROR;
-
-    /* Page size configuration */
-    CS_LOW(AT45_Handle);
-    AT45_SPI_Transmit(AT45_Handle->hspix, AT45_Handle->CMD, sizeof(AT45_Handle->CMD), AT45_TX_TIMEOUT);
-    CS_HIGH(AT45_Handle);
-
-    /* Wait for end of programming of the nonvolatile register */
-    if (AT45_WaitWithTimeout(AT45_Handle, AT45_PAGE_ERASE_PROGRAMMING_TIME) != SUCCESS)
-        return ERROR;
-
-    /* Check the new page size */
-    if (AT45_PageSizeCheck(AT45_Handle) != targetPageSize)
-        return ERROR;
-
-    return SUCCESS;
-}
-
 static uint16_t ModBus_CRC(const uint8_t *pBuffer, uint16_t bufSize)
 {
     uint16_t CRC16 = 0xffff;
@@ -478,4 +471,62 @@ static uint16_t ModBus_CRC(const uint8_t *pBuffer, uint16_t bufSize)
     }
 
     return CRC16;
+}
+
+static void address_bytes_swap(AT45_HandleTypeDef *AT45_Handle, uint32_t address){
+    switch (AT45_Handle->pageSize)
+    {
+    case 264:
+        uint32_t pageNo = address/264;
+        uint32_t pageOffset = address%264;
+        //all bits excluding lowest 7
+        AT45_Handle->addressBytes[0] = 
+            (uint8_t) (pageNo>>7);   
+        //7 bits pageNo and 1 bit offset
+        AT45_Handle->addressBytes[1] = 
+            (uint8_t) ((pageNo<<1) | ((pageOffset>>8) & 0x01));   
+        AT45_Handle->addressBytes[2] = 
+            (uint8_t) pageOffset;
+        break;
+    case 528:
+        uint32_t pageNo = address/528;
+        uint32_t pageOffset = address%528;
+        //all bits excluding lowest 6
+        AT45_Handle->addressBytes[0] = 
+            (uint8_t) (pageNo>>6);   
+        //6 bits pageNo and 2 bit offset
+        AT45_Handle->addressBytes[1] = 
+            (uint8_t) ((pageNo<<2) | ((pageOffset>>8) & 0x03)); 
+        AT45_Handle->addressBytes[2] = 
+            (uint8_t) pageOffset;
+        break;
+    default:
+        AT45_Handle->addressBytes[0] = 
+            (uint8_t) (address >> 16);
+        AT45_Handle->addressBytes[1] = 
+            (uint8_t) (address >> 8);
+        AT45_Handle->addressBytes[2] = 
+            (uint8_t) (address >> 0);
+        break;
+    }
+}
+
+int AT45_block_size(AT45_HandleTypeDef *AT45_Handle){
+    return AT45_Handle->pageSize*8;
+}
+
+static const uint32_t pagesPerSector[] = {
+    128,
+    256,
+    256,
+    256,
+    128,
+    1024
+};
+
+
+int AT45_sector_size(AT45_HandleTypeDef *AT45_Handle)
+{
+    uint32_t chipPagesPerSector = pagesPerSector[(AT45_Handle->ID[1] - AT45DB021)];
+    return chipPagesPerSector*AT45_Handle->pageSize;
 }

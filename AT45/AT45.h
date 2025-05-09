@@ -47,8 +47,32 @@
 
 /* Device constants */
 #define AT45_MANUFACTURER_ID    0x1F
-#define AT45_BLOCK_SIZE      ((AT45_PAGE_SIZE) * 8)
-#define AT45_SECTOR_SIZE     ((AT45_PAGE_SIZE) * 256)
+
+#define AT45DB021E_PAGE_SIZE_BINARY     256
+#define AT45DB021E_PAGE_SIZE_STANDARD   264
+#define AT45DB041E_PAGE_SIZE_BINARY     256
+#define AT45DB041E_PAGE_SIZE_STANDARD   264
+#define AT45DB081E_PAGE_SIZE_BINARY     256
+#define AT45DB081E_PAGE_SIZE_STANDARD   264
+#define AT45DB161E_PAGE_SIZE_BINARY     512
+#define AT45DB161E_PAGE_SIZE_STANDARD   528
+#define AT45DB321E_PAGE_SIZE_BINARY     512
+#define AT45DB321E_PAGE_SIZE_STANDARD   528
+#define AT45DB641E_PAGE_SIZE_BINARY     256
+#define AT45DB641E_PAGE_SIZE_STANDARD   264
+
+#define AT45DB021E_BLOCK_SIZE_BINARY     (AT45DB021E_PAGE_SIZE_BINARY*8)
+#define AT45DB021E_BLOCK_SIZE_STANDARD   (AT45DB021E_PAGE_SIZE_STANDARD*8)
+#define AT45DB041E_BLOCK_SIZE_BINARY     (AT45DB041E_PAGE_SIZE_BINARY*8)
+#define AT45DB041E_BLOCK_SIZE_STANDARD   (AT45DB041E_PAGE_SIZE_STANDARD*8)
+#define AT45DB081E_BLOCK_SIZE_BINARY     (AT45DB081E_PAGE_SIZE_BINARY*8)
+#define AT45DB081E_BLOCK_SIZE_STANDARD   (AT45DB081E_PAGE_SIZE_STANDARD*8)
+#define AT45DB161E_BLOCK_SIZE_BINARY     (AT45DB161E_PAGE_SIZE_BINARY*8)
+#define AT45DB161E_BLOCK_SIZE_STANDARD   (AT45DB161E_PAGE_SIZE_STANDARD*8)
+#define AT45DB321E_BLOCK_SIZE_BINARY     (AT45DB321E_PAGE_SIZE_BINARY*8)
+#define AT45DB321E_BLOCK_SIZE_STANDARD   (AT45DB321E_PAGE_SIZE_STANDARD*8)
+#define AT45DB641E_BLOCK_SIZE_BINARY     (AT45DB641E_PAGE_SIZE_BINARY*8)
+#define AT45DB641E_BLOCK_SIZE_STANDARD   (AT45DB641E_PAGE_SIZE_STANDARD*8)
 
 enum AT45_DeviceID_e { AT45DB021 = 0x23, AT45DB041, AT45DB081, AT45DB161, AT45DB321, AT45DB641 };
 enum AT45_PageSizeOptions_e {AT45_PAGE_SIZE_BINARY , AT45_PAGE_SIZE_ACTUAL };
@@ -57,10 +81,6 @@ enum AT45_PageSizeOptions_e {AT45_PAGE_SIZE_BINARY , AT45_PAGE_SIZE_ACTUAL };
 #define KB_TO_BYTE(KB)         ((KB) * 1024)
 #define CS_HIGH(DEVICE_HANDLE) SET_BIT((DEVICE_HANDLE)->CS_Port->BSRR, (DEVICE_HANDLE)->CS_Pin)
 #define CS_LOW(DEVICE_HANDLE)  SET_BIT((DEVICE_HANDLE)->CS_Port->BSRR, (DEVICE_HANDLE)->CS_Pin << 16)
-#define ADDRESS_BYTES_SWAP(DEVICE_HANDLE, ADDRESS)                  \
-    (DEVICE_HANDLE)->addressBytes[0] = (uint8_t) ((ADDRESS) >> 16); \
-    (DEVICE_HANDLE)->addressBytes[1] = (uint8_t) ((ADDRESS) >> 8);  \
-    (DEVICE_HANDLE)->addressBytes[2] = (uint8_t) ((ADDRESS) >> 0)
 
 /* Data types */
 typedef enum AT45_EraseInstruction_e {
@@ -108,8 +128,12 @@ typedef struct AT45_HandleTypeDef_s
  * @param CS_Pin: GPIO_Pin_x
  * @return Device status
  */
-AT45_Status_t AT45_Init(AT45_HandleTypeDef *AT45_Handle, SPI_HandleTypeDef *hspix, GPIO_TypeDef *CS_Port,
-                        uint16_t CS_Pin);
+AT45_Status_t AT45_Init(
+    AT45_HandleTypeDef *AT45_Handle, 
+    SPI_HandleTypeDef *hspix, 
+    GPIO_TypeDef *CS_Port,
+    uint16_t CS_Pin
+);
 
 /**
  * @brief Writes data to ROM from external buffer
@@ -168,6 +192,20 @@ enum AT45_PageSizeOptions_e AT45_PageSizeCheck(AT45_HandleTypeDef *AT45_Handle);
  * @param targetPageSize: the page size option to use
  * @return SUCCESS or ERROR
  */
-ErrorStatus AT45_PageSizeConfig(AT45_HandleTypeDef *AT45_Handle, enum AT45_PageSizeOptions_e targetPageSize)
+ErrorStatus AT45_PageSizeConfig(AT45_HandleTypeDef *AT45_Handle, enum AT45_PageSizeOptions_e targetPageSize);
+/**
+ * @brief returns the block size in bytes. 
+ * the returned value can change for the same chip depending
+ * on whether binary size is configured or not. always pagesize*8
+ * @param AT45_Handle: pointer to the device handle structure
+ */
+int AT45_block_size(AT45_HandleTypeDef *AT45_Handle);
+/**
+ * @brief returns the sector size in bytes. 
+ * the returned value can change for the same chip depending
+ * on whether binary size is configured or not.
+ * @param AT45_Handle: pointer to the device handle structure
+ */
+int AT45_sector_size(AT45_HandleTypeDef *AT45_Handle);
 
 #endif
