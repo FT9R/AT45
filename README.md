@@ -44,8 +44,11 @@ AT45_HandleTypeDef AT45_Handle;
 ```
 * Initialize SPIx periphery
 * Initialize the FLASH device:
+* Configure the page size  of the flash
 ```C
 AT45_Init(&AT45_Handle, &hspi3, CS0_GPIO_Port, CS0_Pin);
+if (AT45_Handle->pageSize != AT45DBXX1E_PAGE_SIZE_XX)
+    AT45_PageSizeConfig(AT45_Handle,AT45_PAGE_SIZE_XX);
 ```
 ## Interfacing with HAL
 This library should work out of box together with HAL 
